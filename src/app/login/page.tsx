@@ -1,6 +1,8 @@
 "use client"; // クライアントサイドで動作するコンポーネントであることを示す
 
 import { useRouter } from "next/navigation";
+import { useState } from "react";
+import { Card, CardContent, TextField, Button, Typography } from "@mui/material";
 
 // ========================================
 // ログインページ（UIのみ）
@@ -8,57 +10,112 @@ import { useRouter } from "next/navigation";
 
 
 export default function LoginPage() {
+  // 画面遷移用
   const router = useRouter();
+
+  const [email, setEmail] = useState("");
+
+  const [password, setPassword] = useState("");
+
+  const [isLogin, setIsLogin] = useState(true);
+  // → true: ログイン / false: 新規登録
+
+  const [error, setError] = useState("");
+  // → エラーメッセージを保持
+
+  const [loading, setLoading] = useState(false);
+  // → 処理中かどうか（ボタンの無効化に使う）
+
+  const handleLogin = async () => {
+
+  const res = await fetch("", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      email,
+      password
+    })
+  })
+
+  const data = await res.json()
+
+  localStorage.setItem("token", data.token)
+
+  router.push("/home")
+}
+
+  const handleAuth = async (e: React.FormEvent) => {
+    // フォーム送信時のページリロードを防ぐ
+    e.preventDefault();
+
+    // エラーをクリア
+    setError("");
+
+    // ローディング開始
+    setLoading(true);
+  };
+  
   return (
-    <div className="min-h-screen flex items-center justify-center">
-      <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-8 w-full max-w-md border border-white/10">
-        <h1 className="text-3xl font-bold text-white text-center mb-8">
-          <span className="text-4xl mr-2">✨</span>
-          SNS App
-        </h1>
+    <main className="min-h-screen flex items-center justify-center bg-gray-100">
 
-        {/* タブ切り替え（見た目のみ） */}
-        <div className="flex mb-6">
-          <button className="flex-1 py-2 text-center text-white border-b-2 border-purple-500">
-            ログイン
-          </button>
-          <button className="flex-1 py-2 text-center text-white/50 border-b border-white/10">
-            新規登録
-          </button>
-        </div>
+      <Card className="w-[400px] min-h-[450px] shadow-lg">
 
-        {/* フォーム（見た目のみ） */}
-        <form className="space-y-4">
-          <div>
-            <label className="block text-white/70 text-sm mb-2">
-              メールアドレス
-            </label>
-            <input
-              type="email"
-              className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white placeholder-white/30 focus:outline-none focus:border-purple-500 transition"
-              placeholder="example@email.com"
-            />
+        <CardContent className="flex flex-col gap-6 !pt-12 !pb-8 !px-8">
+
+          <Typography variant="h4" className="text-center font-bold">
+            TreNavi Login
+          </Typography>
+
+          <div className="flex width mb-6">
+            <button
+              onClick={() => setIsLogin(true)}
+              className={isLogin ? "border-b-2 border-blue-500" : "text-gray-400"}
+            >
+              ログイン
+            </button>
+            <button
+              onClick={() => setIsLogin(false)}>
+              新規登録
+            </button>
           </div>
 
-          <div>
-            <label className="block text-white/70 text-sm mb-2">
-              パスワード
-            </label>
-            <input
-              type="password"
-              className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white placeholder-white/30 focus:outline-none focus:border-purple-500 transition"
-              placeholder="6文字以上"
+          {!isLogin && (
+            <TextField
+              label="Name"
+              type="name"
+              fullWidth
             />
-          </div>
+          )}
 
-          <button
-            type="button"
-            className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-semibold py-3 rounded-lg transition-all"
-            onClick={() => router.push("/select-mode")}>
-            ログイン
-          </button>
-        </form>
-      </div>
-    </div>
-  );
+          <TextField
+            label="Email"
+            type="email"
+            fullWidth
+            className="!mt-6"
+          />
+
+          <TextField
+            label="Password"
+            type="password"
+            fullWidth
+            className="!mt-3"
+          />
+
+          <Button
+            variant="contained"
+            size="large"
+            fullWidth
+            className="!mt-10"
+          >
+            Login
+          </Button>
+
+        </CardContent>
+
+      </Card>
+
+    </main>
+  )
 }
