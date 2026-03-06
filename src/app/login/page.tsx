@@ -13,6 +13,8 @@ export default function LoginPage() {
   // 画面遷移用
   const router = useRouter();
 
+  const [name, setName] = useState("");
+
   const [email, setEmail] = useState("");
 
   const [password, setPassword] = useState("");
@@ -28,22 +30,48 @@ export default function LoginPage() {
 
   const handleLogin = async () => {
 
-  const res = await fetch("", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify({
-      email,
-      password
+    try {
+
+      const res = await fetch("http://localhost:8080/api/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          email,
+          password
+        })
     })
-  })
 
   const data = await res.json()
 
   localStorage.setItem("token", data.token)
 
   router.push("/home")
+
+} catch(err) {
+
+  setError("ログイン失敗")
+
+} finally {
+
+  setLoading(false)
+
+}
+}
+
+const handleRegister = async () => {
+  const res = await fetch("http://localhost/api/register", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"      
+    },
+    body:JSON.stringify({
+      name,
+      email,
+      password
+    })
+  })
 }
 
   const handleAuth = async (e: React.FormEvent) => {
@@ -55,6 +83,12 @@ export default function LoginPage() {
 
     // ローディング開始
     setLoading(true);
+
+    if(isLogin) {
+      await handleLogin()
+    } else {
+      await handleRegister()
+    }
   };
   
   return (
@@ -84,32 +118,39 @@ export default function LoginPage() {
           {!isLogin && (
             <TextField
               label="Name"
-              type="name"
+              value={name}
               fullWidth
+              onChange={(e)=>setName(e.target.value)}
             />
           )}
 
           <TextField
             label="Email"
             type="email"
+            value={email}
             fullWidth
             className="!mt-6"
+            onChange={(e)=>setEmail(e.target.value)}
           />
 
           <TextField
             label="Password"
             type="password"
+            value={password}
             fullWidth
             className="!mt-3"
+            onChange={(e)=>setPassword(e.target.value)}
           />
 
           <Button
             variant="contained"
             size="large"
             fullWidth
+            type="submit"
             className="!mt-10"
+            onClick={handleAuth}
           >
-            Login
+            {isLogin ? "ログイン" : "登録" }
           </Button>
 
         </CardContent>
