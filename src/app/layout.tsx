@@ -4,6 +4,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 // ツールバーのインポート
 import { Toolbar } from "@mui/material";
+import { AppRouterCacheProvider } from "@mui/material-nextjs/v15-appRouter";
 // ヘッダーコンポーネントのインポート
 import Header from "@/components/Header";
 import "./globals.css";
@@ -34,18 +35,22 @@ export default function RootLayout({
   children: React.ReactNode; 
 }>) {
   return (
-    <html lang="en">
+    <html lang="ja">
       {/* body全体にフォントの設定を行うCSS */}
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        {/* ヘッダー */}
-        <Header />
+        <AppRouterCacheProvider>
+          {/* ヘッダー */}
+          <Header />
 
-        {/* ヘッダーが position: fixed の場合その高さ分だけ余白を作るためのコンポーネント*/}
-        <Toolbar />
-        {/* 各ページの内容 */}
-        {children}
+          {/* ヘッダーが position: fixed の場合その高さ分だけ余白を作るためのコンポーネント*/}
+          <Toolbar />
+          {/* 各ページの内容 */}
+          <main style={{ marginTop: "64px" }}>
+            {children}
+          </main>
+        </AppRouterCacheProvider>
       </body>
     </html>
   );
