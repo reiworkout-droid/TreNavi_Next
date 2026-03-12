@@ -1,28 +1,27 @@
 "use client"; // クライアントサイドで動作するコンポーネントであることを示す
 
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Card, CardContent, TextField, Button, Typography } from "@mui/material";
+import { useSearchParams } from "next/navigation";
 
 // ログインページのコンポーネント
 export default function LoginPage() {
+
   // 画面遷移用
   const router = useRouter();
 
   const [name, setName] = useState("");
-
   const [email, setEmail] = useState("");
-
   const [password, setPassword] = useState("");
+  const [isLogin, setIsLogin] = useState(true);// → true: ログイン / false: 新規登録
 
-  const [isLogin, setIsLogin] = useState(true);
-  // → true: ログイン / false: 新規登録
+  const [error, setError] = useState("");// → エラーメッセージを保持
 
-  const [error, setError] = useState("");
-  // → エラーメッセージを保持
+  const [loading, setLoading] = useState(false);// → 処理中かどうか（ボタンの無効化に使う）
 
-  const [loading, setLoading] = useState(false);
-  // → 処理中かどうか（ボタンの無効化に使う）
+  const searchParams = useSearchParams();
+  const redirect = searchParams.get("redirect");
   
   const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
@@ -60,13 +59,16 @@ export default function LoginPage() {
 
   // ステータスコードが200系じゃなければエラーにする
   // 例：401（認証失敗）
-  if (!res.ok) {
-    throw new Error("Login failed")
+  if (res.ok) {
+    if (redirect) {
+      router.push(redirect);
+    } else {
+      router.push("/home");
+    }
   }
   // レスポンスのJSONを取得
   const data = await res.json()
 
-  router.push("/select-mode")
   
 } catch(err) { // エラーが発生した場合はエラーメッセージをセット
 
@@ -92,7 +94,7 @@ const handleRegister = async () => {
       ?.split("=")[1] || "" // 見つかったCookieを"="で分割して値を取得、見つからなければ空文字列
   )
 
-
+  
   const res = await fetch(`${API_URL}/api/register`, {
     method: "POST",
     credentials: "include",
@@ -110,7 +112,7 @@ const handleRegister = async () => {
   const data = await res.json()
   console.log(data)
   
-  router.push("/select-mode")
+  router.push("/home")
 
 }
 

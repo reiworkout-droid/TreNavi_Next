@@ -34,8 +34,8 @@ export default function Header() {
             予約
           </Button>
 
-          <Button color="inherit" onClick={() => router.push("/profile")}>
-            プロフィール
+          <Button color="inherit" onClick={() => router.push("/register_trainer")}>
+            トレーナー登録
           </Button>
         </Box>
 
