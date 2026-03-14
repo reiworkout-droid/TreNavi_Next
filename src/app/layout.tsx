@@ -5,6 +5,8 @@ import { Geist, Geist_Mono } from "next/font/google";
 // ツールバーのインポート
 import { Toolbar } from "@mui/material";
 import { AppRouterCacheProvider } from "@mui/material-nextjs/v15-appRouter";
+
+import { AuthProvider } from "@/context/AuthContext"
 // ヘッダーコンポーネントのインポート
 import Header from "@/components/Header";
 import "./globals.css";
@@ -41,15 +43,17 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <AppRouterCacheProvider>
-          {/* ヘッダー */}
-          <Header />
+          <AuthProvider>
+            {/* ヘッダー */}
+            <Header />
 
-          {/* ヘッダーが position: fixed の場合その高さ分だけ余白を作るためのコンポーネント*/}
-          <Toolbar />
-          {/* 各ページの内容 */}
-          <main style={{ marginTop: "64px" }}>
-            {children}
-          </main>
+            {/* ヘッダーが position: fixed の場合その高さ分だけ余白を作るためのコンポーネント*/}
+            <Toolbar />
+            {/* 各ページの内容 */}
+            <main style={{ marginTop: "64px" }}>
+              {children}
+            </main>
+          </AuthProvider>
         </AppRouterCacheProvider>
       </body>
     </html>
