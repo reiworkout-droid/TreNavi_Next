@@ -2,9 +2,19 @@
 
 import { AppBar, Toolbar, Typography, Button, Box } from "@mui/material";
 import { useRouter } from "next/navigation";
+import { useAuth } from "@/context/AuthContext"
 
 export default function Header() {
   const router = useRouter();
+
+  const { user, logout } = useAuth()
+
+  const handleLogout = async () => {
+
+    await logout()
+
+    router.push("/login")
+  }
 
   return (
     // 固定ヘッダー
@@ -37,6 +47,16 @@ export default function Header() {
           <Button color="inherit" onClick={() => router.push("/register_trainer")}>
             トレーナー登録
           </Button>
+
+          {user ? (
+            <Button color="inherit" onClick={handleLogout}>
+              ログアウト
+            </Button>
+          ) : (
+            <Button color="inherit" onClick={() => router.push("/login")}>
+              ログイン
+            </Button>
+          )}
         </Box>
 
       </Toolbar>

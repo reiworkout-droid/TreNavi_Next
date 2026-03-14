@@ -2,9 +2,10 @@
 
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { Card, CardContent, TextField, Button, Typography } from "@mui/material";
+import { Card, CardContent, TextField, Button, Typography, IconButton, InputAdornment } from "@mui/material";
 import { useSearchParams } from "next/navigation";
-
+import Visibility from "@mui/icons-material/Visibility";
+import VisibilityOff from "@mui/icons-material/VisibilityOff";
 // ログインページのコンポーネント
 export default function LoginPage() {
 
@@ -14,6 +15,7 @@ export default function LoginPage() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword,setShowPassword] = useState(false); //パスワード表示用
   const [isLogin, setIsLogin] = useState(true);// → true: ログイン / false: 新規登録
 
   const [error, setError] = useState("");// → エラーメッセージを保持
@@ -59,20 +61,22 @@ export default function LoginPage() {
 
   // ステータスコードが200系じゃなければエラーにする
   // 例：401（認証失敗）
-  if (res.ok) {
-    if (redirect) {
-      router.push(redirect);
-    } else {
-      router.push("/home");
-    }
-  }
-  // レスポンスのJSONを取得
   const data = await res.json()
 
+  if (!res.ok) {
+    setError(data.message ?? "メールまたはパスワードが違います")
+    return
+  }
+
+  if (redirect) {
+    router.push(redirect)
+  } else {
+    router.push("/home")
+  }
   
 } catch(err) { // エラーが発生した場合はエラーメッセージをセット
 
-  setError("ログイン失敗")
+  setError("ログインに失敗しました")
 
 } finally {
   // ローディングOFF
@@ -179,11 +183,29 @@ const handleRegister = async () => {
 
           <TextField
             label="Password"
-            type="password"
+            type={showPassword ? "text" : "password"}
             value={password}
             fullWidth
             className="!mt-3"
             onChange={(e)=>setPassword(e.target.value)}
+            InputProps={{
+              endAdornment: (
+
+                <InputAdornment position="end">
+
+                  <IconButton
+                    onClick={()=>setShowPassword(!showPassword)}
+                    edge="end"
+                  >
+
+                    {showPassword ? <VisibilityOff /> : <Visibility />}
+
+                  </IconButton>
+
+                </InputAdornment>
+
+              )
+            }}
           />
 
           <Button
@@ -192,12 +214,23 @@ const handleRegister = async () => {
             fullWidth
             type="submit"
             className="!mt-10"
-            // onClick={handleAuth}
-          >
-            {isLogin ? "ログイン" : "登録" }
+              disabled={loading}   // ⏳ ローディング中は押せない
+            >
+              {loading
+                ? "処理中..."
+                : isLogin
+                ? "ログイン"
+                : "登録"}
           </Button>
 
         </form>
+        {/* 🔴 エラーメッセージ表示 */}
+
+        {error && (
+          <Typography color="error" align="center">
+            {error}
+          </Typography>
+        )}
 
         </CardContent>
 

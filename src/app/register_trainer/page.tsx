@@ -1,10 +1,11 @@
 "use client"
+import AreaSelector from "@/components/AreaSelector";
 import { Box, Button, Card, CardContent, Chip, MenuItem, OutlinedInput, Select, TextField, Typography } from "@mui/material";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 export default function RegisterTrainerForm() {
-
+  // 画面遷移用
   const router = useRouter();
 
   const [tel, setTel] = useState("");
@@ -15,16 +16,10 @@ export default function RegisterTrainerForm() {
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
 
-  const [selectedAreas, setSelectedAreas] = useState<number[]>([]);
+  const [areas_ids, setAreasIds] = useState<number[]>([]);
   const [selectedCategories, setSelectedCategories] = useState<number[]>([]);
   const [selectedSpecialities, setSelectedSpecialities] = useState<number[]>([]);
 
-  // 仮の選択肢データ（実際はAPIから取得）
-  const areaOptions = [
-    { id: 4, name: "天神・大名・今泉" },
-    { id: 5, name: "六本松" },
-    { id: 6, name: "赤坂" },
-  ];
   const categoryOptions = [
     { id: 1, name: "筋トレ" },
     { id: 2, name: "ヨガ" },
@@ -35,14 +30,16 @@ export default function RegisterTrainerForm() {
     { id: 2, name: "筋力向上" },
     { id: 3, name: "柔軟性向上" },
   ];
-
+  // APIのURLは環境変数から取得
   const API_URL = process.env.NEXT_PUBLIC_API_URL;
   console.log("API_URL:", API_URL);
-
+  // 画像選択時の処理
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    // 選択されたファイルを取得
     const file = e.target.files?.[0] || null;
+    // 画像ファイルをfileに保存
     setImageFile(file);
-    
+    // プレビュー用のURLを作成して保存
     if (file) {
       setImagePreview(URL.createObjectURL(file)); // プレビュー用
     } else {
@@ -80,19 +77,12 @@ export default function RegisterTrainerForm() {
       formData.append("profile_image", imageFile);
     }
 
-    selectedAreas.forEach(id => formData.append("areas_ids[]", id.toString()));
     selectedCategories.forEach(id => formData.append("categories_ids[]", id.toString()));
     selectedSpecialities.forEach(id => formData.append("specialities_ids[]", id.toString()));
+    areas_ids.forEach(id => formData.append("areas_ids[]", id.toString()));
 
     try {
-
-      // CSRF取得はログイン済み前提
-      await fetch(`${API_URL}/sanctum/csrf-cookie`, { credentials: "include" });
-      const xsrfToken = decodeURIComponent(
-        document.cookie.split("; ").find(row => row.startsWith("XSRF-TOKEN="))?.split("=")[1] || ""
-      );
     
-      // const res = await fetch(`${API_URL}/api/trainers`, {
       const res = await fetch(`${API_URL}/api/trainers`, {
         method: "POST",
         credentials: "include",
@@ -188,31 +178,11 @@ export default function RegisterTrainerForm() {
             />
           </div>
 
-          {/* Material UI マルチセレクト */}
-          <Box>
-            <Typography className="mb-1 font-medium">エリア</Typography>
-            <Select
-              multiple
-              value={selectedAreas}
-              onChange={(e) => setSelectedAreas(e.target.value as number[])}
-              input={<OutlinedInput label="エリア" />}
-              renderValue={(selected) => (
-                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
-                  {selected.map((id) => {
-                    const area = areaOptions.find(a => a.id === id);
-                    return <Chip key={id} label={area?.name} />;
-                  })}
-                </Box>
-              )}
-              MenuProps={MenuProps}
-              fullWidth
-            >
-              {areaOptions.map((a) => (
-                <MenuItem key={a.id} value={a.id}>{a.name}</MenuItem>
-              ))}
-            </Select>
-          </Box>
-
+          {/* エリア選択 */}
+          <AreaSelector
+            areasIds={areas_ids}
+            setAreasIds={setAreasIds}
+          />
           <Box>
             <Typography className="mb-1 font-medium">カテゴリー</Typography>
             <Select
