@@ -9,6 +9,7 @@ import { AppRouterCacheProvider } from "@mui/material-nextjs/v15-appRouter";
 import { AuthProvider } from "@/context/AuthContext"
 // ヘッダーコンポーネントのインポート
 import Header from "@/components/Header";
+import BottomNav from "@/components/BottomNav"
 import "./globals.css";
 
 // フォントの設定
@@ -47,12 +48,16 @@ export default function RootLayout({
             {/* ヘッダー */}
             <Header />
 
-            {/* ヘッダーが position: fixed の場合その高さ分だけ余白を作るためのコンポーネント*/}
+            <Header />
+
             <Toolbar />
-            {/* 各ページの内容 */}
-            <main style={{ marginTop: "64px" }}>
+
+            <main style={{ marginTop: "64px", marginBottom: "80px" }}>
               {children}
             </main>
+
+            <BottomNav />
+            
           </AuthProvider>
         </AppRouterCacheProvider>
       </body>
