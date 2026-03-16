@@ -2,6 +2,7 @@
 
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
+import { Trainer } from "@/types"
 import {
   Box,
   Card,
@@ -15,24 +16,6 @@ import { useRouter } from "next/navigation";
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 // const router = useRouter();
 
-
-type Area = { id: number; name: string };
-type Category = { id: number; name: string };
-type Speciality = { id: number; name: string };
-type Plan = { id: number; title: string; duration: number; price: number };
-type Trainer = {
-  id: number;
-  record: string;
-  bio: string;
-  profile_image: string | null;
-  user: { name: string };
-  areas: Area[];
-  categories: Category[];
-  specialities: Speciality[];
-  plans: Plan[];
-  likes_count: number;
-  is_liked?: boolean;
-};
 
 export default function TrainerDetailPage() {
   const params = useParams() as { id: string };

@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
+import { Prefecture, City, Area, Props } from "@/types"
 import {
   FormControl,
   InputLabel,
@@ -10,26 +11,6 @@ import {
 } from "@mui/material"
 
 const API = process.env.NEXT_PUBLIC_API_URL
-
-type Prefecture = {
-  id: number
-  name: string
-}
-
-type City = {
-  id: number
-  name: string
-}
-
-type Area = {
-  id: number
-  name: string
-}
-
-type Props = {
-  areasIds: number[]
-  setAreasIds: React.Dispatch<React.SetStateAction<number[]>>
-}
 
 export default function AreaSelector({ areasIds, setAreasIds }: Props) {
 
