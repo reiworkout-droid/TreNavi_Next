@@ -1,62 +1,59 @@
 "use client";
 
-import { AppBar, Toolbar, Typography, Button, Box } from "@mui/material";
+import {
+  AppBar,
+  Toolbar,
+  Typography,
+  IconButton,
+  Box,
+  Button
+} from "@mui/material";
+
+import NotificationsIcon from "@mui/icons-material/Notifications";
 import { useRouter } from "next/navigation";
-import { useAuth } from "@/context/AuthContext"
+import { useAuth } from "@/context/AuthContext";
 
 export default function Header() {
-  const router = useRouter();
 
-  const { user, logout } = useAuth()
+  const router = useRouter();
+  const { user, logout } = useAuth();
 
   const handleLogout = async () => {
-
-    await logout()
-
-    router.push("/login")
-  }
+    await logout();
+    router.push("/login");
+  };
 
   return (
-    // 固定ヘッダー
-    <AppBar position="fixed">
-        {/* ヘッダー内容 */}
+    <AppBar position="fixed" color="primary" elevation={1}>
+
       <Toolbar sx={{ display: "flex", justifyContent: "space-between" }}>
-        {/* 文字 */}
+
+        {/* ロゴ */}
         <Typography
           variant="h6"
-          sx={{ cursor: "pointer", fontWeight: "bold" }}
+          sx={{ fontWeight: "bold", cursor: "pointer" }}
           onClick={() => router.push("/home")}
         >
           TreNavi
         </Typography>
-        
-        {/* ナビゲーションボタン */}
-        <Box sx={{ display: "flex", gap: 2 }}>
-          <Button color="inherit" onClick={() => router.push("/search")}>
-            お気に入り
-          </Button>
 
-          <Button color="inherit" onClick={() => router.push("/search")}>
-            検索
-          </Button>
+        {/* 右側 */}
+        <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
 
-          <Button color="inherit" onClick={() => router.push("/reservations")}>
-            予約
-          </Button>
-
-          <Button color="inherit" onClick={() => router.push("/register_trainer")}>
-            トレーナー登録
-          </Button>
+          <IconButton color="inherit">
+            <NotificationsIcon />
+          </IconButton>
 
           {user ? (
             <Button color="inherit" onClick={handleLogout}>
-              ログアウト
+              Logout
             </Button>
           ) : (
             <Button color="inherit" onClick={() => router.push("/login")}>
-              ログイン
+              Login
             </Button>
           )}
+
         </Box>
 
       </Toolbar>

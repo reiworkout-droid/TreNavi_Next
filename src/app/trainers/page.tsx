@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation"
 import { useEffect, useState } from "react"
+import { Prefecture, City, Area, Category, Speciality, TrainerSearch } from "@/types"
 import {
   Box,
   Card,
@@ -17,49 +18,6 @@ import {
 } from "@mui/material"
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL
-
-type Prefecture = {
-  id: number
-  name: string
-}
-
-type City = {
-  id: number
-  name: string
-}
-
-type Area = {
-  id: number
-  name: string
-}
-
-type Category = {
-  id: number
-  name: string
-}
-
-type Speciality = {
-  id: number
-  name: string
-}
-
-type Trainer = {
-  id: number
-  name: string
-  record: string
-  bio: string
-  profile_image: string | null
-
-  user: { name:string }
-
-  plans_min_price: number
-  likes_count: number
-
-  areas: { id:number; name:string }[]
-  categories: { id:number; name:string }[]
-  specialities: { id:number; name:string }[]
-  is_liked?: boolean
-}
 
 export default function SearchPage() {
 
@@ -84,7 +42,7 @@ export default function SearchPage() {
   const [keyword,setKeyword] = useState("")
 
   // 検索結果
-  const [trainers,setTrainers] = useState<Trainer[]>([])
+  const [trainers,setTrainers] = useState<TrainerSearch[]>([])
 
   // ----------------------
   // 都道府県取得
