@@ -14,10 +14,9 @@ import {
 import { useRouter } from "next/navigation";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
-// const router = useRouter();
-
 
 export default function TrainerDetailPage() {
+  const router = useRouter();
   const params = useParams() as { id: string };
   const id = parseInt(params.id, 10); // URLから取得した文字列を数値に変換
 
@@ -97,9 +96,16 @@ export default function TrainerDetailPage() {
               <Grid size={{xs:12, md:4}} key={plan.id}>
                 <Card>
                   <CardContent>
-                    <Typography variant="h6">{plan.title}</Typography>
-                    <Typography>⏱ {plan.duration}分</Typography>
+                    <Typography variant="h6">{plan.name}</Typography>
+                    <Typography>⏱ {plan.duration_minutes}分</Typography>
                     <Typography sx={{ fontWeight: "bold", mt: 1 }}>💰 {plan.price}円</Typography>
+                    <Button
+                      variant="contained"
+                      onClick={() =>
+                      router.push(`/reservation/create?plan_id=${plan.id}&name=${plan.name}&price=${plan.price}&duration=${plan.duration_minutes}`)                      }
+                    >
+                      予約する
+                    </Button>
                   </CardContent>
                 </Card>
               </Grid>
