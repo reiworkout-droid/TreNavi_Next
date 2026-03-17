@@ -8,11 +8,32 @@ import {
   CardContent,
   Button
 } from "@mui/material";
+import { Reservation } from "@/types";
+import { useState, useEffect } from "react";
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL
 
 export default function HomePage() {
 
   const router = useRouter();
 
+const [nextReservation,setNextReservation] = useState<Reservation | null>(null)
+
+useEffect(()=>{
+
+  const fetchNext = async()=>{
+
+    const res = await fetch(`${API_URL}/api/reservations/next`,{
+      credentials:"include"
+    })
+
+    const data: Reservation | null = await res.json()
+    setNextReservation(data)
+  }
+
+  fetchNext()
+
+},[])
   return (
 
     <Box sx={{ p:3 }}>
@@ -46,27 +67,57 @@ export default function HomePage() {
       </Card>
 
       {/* 次の予約 */}
+      {nextReservation ? (
+        <Card sx={{mb:3}}>
+          <CardContent>
 
-      <Card sx={{ mb:3 }}>
-        <CardContent>
+            <Typography variant="h6">
+              次の予約
+            </Typography>
 
-          <Typography variant="h6">
-            次の予約
-          </Typography>
+            <Typography fontWeight="bold">
+              {nextReservation.plan.name}
+            </Typography>
 
-          <Typography sx={{ mt:1 }}>
-            予約はありません
-          </Typography>
+            <Typography>
+              👤 {nextReservation.trainer.user.name}
+            </Typography>
 
-          <Button
-            sx={{ mt:2 }}
-            onClick={()=>router.push("/reservations")}
-          >
-            予約一覧
-          </Button>
+            <Typography>
+              🗓 {new Date(nextReservation.reserver_at).toLocaleString()}
+            </Typography>
+            <Button
+              sx={{ mt:2 }}
+              onClick={()=>router.push("/reservation")}
+            >
+              予約一覧
+            </Button>
 
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+      ) : (
+        <Card sx={{mb:3}}>
+          <CardContent>
+
+            <Typography variant="h6">
+              次の予約
+            </Typography>
+
+            <Typography color="text.secondary">
+              予約はありません
+            </Typography>
+            <Button
+              sx={{ mt:2 }}
+              onClick={()=>router.push("/reservation")}
+            >
+              予約一覧
+            </Button>
+
+          </CardContent>
+        </Card>
+      )}
+
+
 
       {/* 体重 */}
 
