@@ -22,3 +22,12 @@ export type Reservation = {
   plan: Plan
   trainer: Trainer
 }
+
+export type TrainerReservation = {
+  id: number
+  reserver_at: string
+  status: "pending" | "confirmed" | "canceled"
+  user: { id: number; name: string }
+  plan: { id: number; name: string }
+}
+

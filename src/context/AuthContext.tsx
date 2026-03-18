@@ -8,6 +8,12 @@ type User = {
   id: number
   name: string
   email: string
+  trainer?: Trainer | null
+}
+
+type Trainer = {
+  id: number
+  user_id: number
 }
 
 type AuthContextType = {
