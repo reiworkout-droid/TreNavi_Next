@@ -67,7 +67,7 @@ export default function ReservationsPage(){
               </Typography>
 
               <Typography>
-                ステータス: {r.status}
+                ステータス: {r.status === "pending" ? "未承認" : r.status === "confirmed" ? "承認済み" : "却下"}
               </Typography>
 
             </CardContent>

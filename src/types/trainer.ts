@@ -27,6 +27,17 @@ export type Plan = {
   session_count: number | null
 }
 
+
+// 一覧・カード用
+export type SimplePlan = {
+  id: number
+  name: string
+  price: number
+  duration_minutes: number
+}
+
+
+
 export type Props = {
   areasIds: number[]
   setAreasIds: React.Dispatch<React.SetStateAction<number[]>>

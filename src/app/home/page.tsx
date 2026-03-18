@@ -67,8 +67,8 @@ useEffect(()=>{
       </Card>
 
       {/* 次の予約 */}
-      {nextReservation ? (
-        <Card sx={{mb:3}}>
+        {nextReservation?.plan ? (
+          <Card sx={{mb:3}}>
           <CardContent>
 
             <Typography variant="h6">
@@ -93,6 +93,8 @@ useEffect(()=>{
               予約一覧
             </Button>
 
+
+
           </CardContent>
         </Card>
       ) : (
@@ -116,6 +118,23 @@ useEffect(()=>{
           </CardContent>
         </Card>
       )}
+
+      <Card>
+        <CardContent>
+
+          <Typography variant="h6">
+            予約一覧（トレーナー側）
+          </Typography>
+
+          <Button
+            sx={{ mt:2 }}
+            onClick={()=>router.push("/trainer/reservations")}
+          >
+            予約一覧へ
+          </Button>
+
+        </CardContent>
+      </Card>
 
 
 
