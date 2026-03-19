@@ -25,7 +25,12 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);// → 処理中かどうか（ボタンの無効化に使う）
 
   const searchParams = useSearchParams();
-  const redirect = searchParams.get("redirect");
+  const [redirect, setRedirect] = useState<string | null>(null);
+
+  useEffect(() => {
+    const params = searchParams.get("redirect");
+    setRedirect(params);
+  }, [searchParams]);
   
   const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
