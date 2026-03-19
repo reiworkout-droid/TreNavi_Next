@@ -1,7 +1,8 @@
-import type { Next } from "next";
+import { NextConfig } from "next"; // 型名を NextConfig にする
 
-const next: Next = {
-  /*  options here */
+const nextConfig: NextConfig = {
+  // ここにオプションを記述
+  reactStrictMode: true,
 };
 
-export default next;
+export default nextConfig;
