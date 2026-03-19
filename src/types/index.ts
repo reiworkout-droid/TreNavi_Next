@@ -31,3 +31,8 @@ export type TrainerReservation = {
   plan: { id: number; name: string }
 }
 
+export type Like = {
+  id: number
+  trainer_id: number
+  user_id: number
+}

@@ -16,6 +16,7 @@ import {
   Button,
   TextField
 } from "@mui/material"
+import TrainerLikeButton from "@/components/TrainerLikeButton"
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL
 
@@ -405,11 +406,12 @@ export default function SearchPage() {
                 </Typography>
 
                 {/* いいね */}
-
-                <Typography sx={{mt:1}}>
-                  ❤️ {trainer.likes_count}
-                </Typography>
-
+                <TrainerLikeButton
+                  trainerId={trainer.id}
+                  initialLiked={trainer.is_liked}
+                  initialCount={trainer.likes_count}
+                />
+                
               </CardContent>
 
             </Card>

@@ -12,6 +12,7 @@ import {
   Button
 } from "@mui/material";
 import { useRouter } from "next/navigation";
+import TrainerLikeButton from "@/components/TrainerLikeButton";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
@@ -83,12 +84,9 @@ export default function TrainerDetailPage() {
           </Typography>
 
           <Typography sx={{ mb: 1 }}>実績: {trainer.record}</Typography>
-          <Typography sx={{ mb: 1 }}>いいね: ❤️ {trainer.likes_count}</Typography>
-          {trainer.is_liked !== undefined && (
-            <Button variant={trainer.is_liked ? "contained" : "outlined"}>
-              {trainer.is_liked ? "Liked" : "Like"}
-            </Button>
-          )}
+                {/* いいね */}
+
+          <TrainerLikeButton trainerId={trainer.id} />
 
           <Typography sx={{ mt: 3, fontWeight: "bold" }}>プラン一覧</Typography>
           <Grid container spacing={2} sx={{ mt: 1 }}>

@@ -15,22 +15,25 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL
 export default function ReservationsPage(){
 
   const [reservations,setReservations] = useState<Reservation[]>([])
+  const [history, setHistory] = useState<Reservation[]>([])
   const [loading,setLoading] = useState(true)
 
   useEffect(()=>{
 
     const fetchReservations = async()=>{
 
-      const res = await fetch(`${API_URL}/api/reservations`,{
-        credentials:"include"
-      })
+      const [res1, res2] = await Promise.all([
+        fetch(`${API_URL}/api/reservations`, { credentials:"include" }),
+        fetch(`${API_URL}/api/reservations/past`, { credentials:"include" })
+      ])
 
-      const data: Reservation[] = await res.json()
+      const data1: Reservation[] = await res1.json()
+      const data2: Reservation[] = await res2.json()
 
-      setReservations(data)
+      setReservations(data1)
+      setHistory(data2)
       setLoading(false)
     }
-
     fetchReservations()
 
   },[])
@@ -74,7 +77,45 @@ export default function ReservationsPage(){
           </Card>
         ))}
       </Stack>
+      
+      {/* 予約履歴 */}
+      <Typography variant="h5" mt={6} mb={3}>
+        予約履歴
+      </Typography>
 
+      <Stack spacing={2}>
+        {history.map((r)=>(
+          <Card key={r.id}>
+            <CardContent>
+
+              <Typography fontWeight="bold">
+                {r.plan.name}
+              </Typography>
+
+              <Typography>
+                👤 {r.trainer.user.name}
+              </Typography>
+
+              <Typography>
+                🗓 {new Date(r.reserver_at).toLocaleString()}
+              </Typography>
+
+              <Typography>
+                💰 ¥{r.price_snapshot}
+              </Typography>
+
+              <Typography>
+                ステータス: {
+                  r.status === "pending" ? "未承認" :
+                  r.status === "confirmed" ? "承認済み" :
+                  r.status === "canceled" ? "キャンセル" : "却下"
+                }
+              </Typography>
+
+            </CardContent>
+          </Card>
+        ))}
+      </Stack>
     </Box>
   )
 }
