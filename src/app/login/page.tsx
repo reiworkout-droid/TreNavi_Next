@@ -1,11 +1,10 @@
 "use client"; // クライアントサイドで動作するコンポーネントであることを示す
 
-export const dynamic = "force-dynamic";
-
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Card, CardContent, TextField, Button, Typography, IconButton, InputAdornment } from "@mui/material";
 import { useSearchParams } from "next/navigation";
+import { Suspense } from 'react'
 import Visibility from "@mui/icons-material/Visibility";
 import VisibilityOff from "@mui/icons-material/VisibilityOff";
 // ログインページのコンポーネント
@@ -28,9 +27,9 @@ export default function LoginPage() {
   const [redirect, setRedirect] = useState<string | null>(null);
 
   useEffect(() => {
-    const params = searchParams.get("redirect");
+    const params = new URLSearchParams(window.location.search).get("redirect");
     setRedirect(params);
-  }, [searchParams]);
+  }, []);  
   
   const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
