@@ -3,8 +3,6 @@
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Card, CardContent, TextField, Button, Typography, IconButton, InputAdornment } from "@mui/material";
-import { useSearchParams } from "next/navigation";
-import { Suspense } from 'react'
 import Visibility from "@mui/icons-material/Visibility";
 import VisibilityOff from "@mui/icons-material/VisibilityOff";
 // ログインページのコンポーネント
@@ -23,14 +21,12 @@ export default function LoginPage() {
 
   const [loading, setLoading] = useState(false);// → 処理中かどうか（ボタンの無効化に使う）
 
-  const searchParams = useSearchParams();
   const [redirect, setRedirect] = useState<string | null>(null);
 
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search).get("redirect");
-    setRedirect(params);
-  }, []);  
-  
+useEffect(() => {
+  const params = new URLSearchParams(window.location.search).get("redirect");
+  setRedirect(params);
+}, []);  
   const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
   // ログイン処理
