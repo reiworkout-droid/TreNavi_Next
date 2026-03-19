@@ -1,7 +1,10 @@
-"use client";
+// app/page.tsx
+import { redirect } from "next/navigation";
 
-import { useState, useEffect } from "react";
+export default function Page() {
+  // リダイレクトは関数内で呼ぶ
+  redirect("/home");
 
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
-
+  // return は必須（実際には表示されないが型安全のため）
+  return null;
+}
