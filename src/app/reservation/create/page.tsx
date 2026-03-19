@@ -1,6 +1,6 @@
 "use client"
 
-import { useSearchParams, useRouter } from "next/navigation"
+import { useRouter } from "next/navigation"
 import { useEffect, useState } from "react"
 import { SimplePlan } from "@/types"
 import {
@@ -13,17 +13,24 @@ import {
   Stack
 } from "@mui/material"
 
-// NEXT_PUBLIC_API_URL は .env に設定
 const API_URL = process.env.NEXT_PUBLIC_API_URL
 
 export default function ReservationCreatePage() {
   const router = useRouter()
-  const searchParams = useSearchParams()
 
-  const planId = searchParams.get("plan_id")
-  const nameParam = searchParams.get("name")
-  const priceParam = searchParams.get("price")
-  const durationParam = searchParams.get("duration")
+  // ⚠ クライアントサイドでのみ URL パラメータを取得
+  const [planId, setPlanId] = useState<string | null>(null)
+  const [nameParam, setNameParam] = useState<string | null>(null)
+  const [priceParam, setPriceParam] = useState<string | null>(null)
+  const [durationParam, setDurationParam] = useState<string | null>(null)
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search)
+    setPlanId(params.get("plan_id"))
+    setNameParam(params.get("name"))
+    setPriceParam(params.get("price"))
+    setDurationParam(params.get("duration"))
+  }, [])
 
   const [plan, setPlan] = useState<SimplePlan | null>(null)
   const [reservedAt, setReservedAt] = useState("")
@@ -54,9 +61,7 @@ export default function ReservationCreatePage() {
         const res = await fetch(`${API_URL}/api/plans/${planId}`, {
           credentials: "include"
         })
-
         if (!res.ok) throw new Error("プラン取得失敗")
-
         const data = await res.json()
         setPlan(data)
       } catch (err) {
@@ -65,7 +70,6 @@ export default function ReservationCreatePage() {
         setLoading(false)
       }
     }
-
     fetchPlan()
   }, [planId, nameParam, priceParam, durationParam])
 
@@ -77,12 +81,7 @@ export default function ReservationCreatePage() {
     }
 
     try {
-      // 1. CSRF Cookie 取得
-      await fetch(`${API_URL}/sanctum/csrf-cookie`, {
-        credentials: "include"
-      })
-
-      // 2. XSRF-TOKEN 取得
+      await fetch(`${API_URL}/sanctum/csrf-cookie`, { credentials: "include" })
       const xsrfToken = document.cookie
         .split("; ")
         .find(row => row.startsWith("XSRF-TOKEN="))
@@ -90,7 +89,6 @@ export default function ReservationCreatePage() {
 
       if (!xsrfToken) throw new Error("XSRFトークンが取得できません")
 
-      // 3. 予約 POST
       const res = await fetch(`${API_URL}/api/reservations`, {
         method: "POST",
         credentials: "include",
@@ -107,13 +105,10 @@ export default function ReservationCreatePage() {
 
       if (!res.ok) {
         const errorData = await res.json().catch(() => ({ message: "不明なエラー" }))
-        console.error("予約失敗:", errorData)
         alert(`予約に失敗しました: ${errorData.message}`)
         return
       }
 
-      const data = await res.json()
-      console.log("予約成功:", data)
       alert("予約しました！")
       router.push("/reservation")
     } catch (err) {
