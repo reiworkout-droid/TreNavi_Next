@@ -1,5 +1,7 @@
 "use client"; // クライアントサイドで動作するコンポーネントであることを示す
 
+export const dynamic = "force-dynamic";
+
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Card, CardContent, TextField, Button, Typography, IconButton, InputAdornment } from "@mui/material";
