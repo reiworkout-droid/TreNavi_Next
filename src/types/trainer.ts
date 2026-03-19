@@ -63,14 +63,11 @@ export type Trainer = {
   record: string
   bio: string
   profile_image: string | null
-
   user: User
   areas: Area[]
   categories: Category[]
   specialities: Speciality[]
-  
   plans: Plan[]
-
   likes_count: number
   is_liked?: boolean
 }

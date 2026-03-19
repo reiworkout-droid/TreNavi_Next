@@ -119,28 +119,9 @@ useEffect(()=>{
         </Card>
       )}
 
-      <Card>
-        <CardContent>
-
-          <Typography variant="h6">
-            予約一覧（トレーナー側）
-          </Typography>
-
-          <Button
-            sx={{ mt:2 }}
-            onClick={()=>router.push("/trainer/reservations")}
-          >
-            予約一覧へ
-          </Button>
-
-        </CardContent>
-      </Card>
-
-
-
       {/* 体重 */}
 
-      <Card>
+      <Card sx={{mb:3}}>
         <CardContent>
 
           <Typography variant="h6">
@@ -161,6 +142,20 @@ useEffect(()=>{
         </CardContent>
       </Card>
 
+      <Card sx={{mb:3}}>
+        <CardContent>
+          <Typography variant="h6">
+            いいね一覧
+          </Typography>
+
+          <Button
+            sx={{ mt:2 }}
+            onClick={()=>router.push("/like")}
+          >
+            いいね一覧
+          </Button>
+        </CardContent>
+      </Card>
     </Box>
   );
 }

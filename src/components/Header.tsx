@@ -21,6 +21,8 @@ export default function Header() {
 
   const { user, logout } = useAuth();
 
+  const isTrainer = !!user?.trainer?.id;
+
   const handleLogout = async () => {
     await logout();
     router.push("/login");
@@ -47,7 +49,7 @@ export default function Header() {
           </IconButton>
 
           {/* トレーナー関連のボタン */}
-          {user && (!user.trainer || Object.keys(user.trainer).length === 0) && (
+          {user && !isTrainer && (
             <Button
               color="inherit"
               size="small"
@@ -55,9 +57,9 @@ export default function Header() {
             >
               登録
             </Button>
-          )}
-          
-          {user?.trainer && (
+          )}       
+
+          {isTrainer && (
             <>
               <Button
                 color="inherit"
@@ -68,7 +70,6 @@ export default function Header() {
                 Trainer
               </Button>
 
-              {/* トレーナーホームにいる場合のみ表示 */}
               {pathname?.startsWith("/trainer/home") && (
                 <Button
                   color="inherit"
@@ -81,7 +82,7 @@ export default function Header() {
               )}
             </>
           )}
-
+          
           {/* ログイン/ログアウト */}
           {user ? (
             <Button color="inherit" size="small" onClick={handleLogout}>
