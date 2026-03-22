@@ -18,22 +18,46 @@ export default function HomePage() {
   const router = useRouter();
 
 const [nextReservation,setNextReservation] = useState<Reservation | null>(null)
+const [diagnosisDone, setDiagnosisDone] = useState<boolean | null>(null); // 診断済みか
 
 useEffect(()=>{
+    // 次の予約を取得
+    const fetchNext = async () => {
+      const res = await fetch(`${API_URL}/api/reservations/next`, {
+        credentials: "include"
+      });
+      const data: Reservation | null = await res.json();
+      setNextReservation(data);
+    };
 
-  const fetchNext = async()=>{
+    // 診断済みかチェック
+    const checkDiagnosis = async () => {
+      const res = await fetch(`${API_URL}/api/user`, {
+        credentials: "include"
+      });
+      const data = await res.json();
+      // 例: user_type が設定されていれば診断済みと判断
+      setDiagnosisDone(!!data.user_type);
+      console.log(diagnosisDone);
+    };
 
-    const res = await fetch(`${API_URL}/api/reservations/next`,{
-      credentials:"include"
-    })
+    fetchNext();
+    checkDiagnosis();
+  }, []);
 
-    const data: Reservation | null = await res.json()
-    setNextReservation(data)
-  }
+  useEffect(() => {
+    console.log("診断済みか:", diagnosisDone);
+  }, [diagnosisDone]);
 
-  fetchNext()
+    const handleDiagnosisClick = () => {
+    if (diagnosisDone) {
+      router.push("/diagnosis/result?type=${userType}"); // 診断済みなら結果ページへ
+    } else {
+      router.push("/diagnosis"); // 未診断なら診断ページへ
+    }
+  };
 
-},[])
+
   return (
 
     <Box sx={{ p:3 }}>
@@ -92,9 +116,6 @@ useEffect(()=>{
             >
               予約一覧
             </Button>
-
-
-
           </CardContent>
         </Card>
       ) : (
@@ -121,7 +142,7 @@ useEffect(()=>{
 
       {/* 体重 */}
 
-      <Card sx={{mb:3}}>
+      {/* <Card sx={{mb:3}}>
         <CardContent>
 
           <Typography variant="h6">
@@ -140,7 +161,7 @@ useEffect(()=>{
           </Button>
 
         </CardContent>
-      </Card>
+      </Card> */}
 
       <Card sx={{mb:3}}>
         <CardContent>
@@ -156,6 +177,17 @@ useEffect(()=>{
           </Button>
         </CardContent>
       </Card>
+
+      {/* TreNavi診断 */}
+      <Card sx={{ mb: 3 }}>
+        <CardContent>
+          <Typography variant="h6">TreNavi診断</Typography>
+          <Typography sx={{ mt: 1 }}>あなたのトレーニータイプを診断しましょう</Typography>
+          <Button sx={{ mt: 2 }} onClick={handleDiagnosisClick}>
+            診断する
+          </Button>
+        </CardContent>
+      </Card>     
     </Box>
   );
 }

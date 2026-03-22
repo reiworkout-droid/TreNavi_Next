@@ -1,18 +1,21 @@
 "use client"
-
+import { useRouter } from "next/navigation"
 import { useEffect, useState } from "react"
-import { Reservation } from "@/types"
+import { Reservation, Review } from "@/types"
 import {
   Box,
   Typography,
   Card,
   CardContent,
-  Stack
+  Stack,
+  Button
 } from "@mui/material"
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL
 
 export default function ReservationsPage(){
+
+  const router = useRouter();
 
   const [reservations,setReservations] = useState<Reservation[]>([])
   const [history, setHistory] = useState<Reservation[]>([])
@@ -111,6 +114,28 @@ export default function ReservationsPage(){
                   r.status === "canceled" ? "キャンセル" : "却下"
                 }
               </Typography>
+              
+            {/* 🔥 ここ追加 */}
+      {/* 🔥 分岐 */}
+      {r.review ? (
+        <Button
+          variant="contained"
+          sx={{ mt: 2 }}
+          onClick={() => router.push(`/reservation/reviews/${r.review!.id}`)}
+        >
+          投稿を見る
+        </Button>
+      ) : (
+        <Button
+          variant="outlined"
+          sx={{ mt: 2 }}
+          onClick={() =>
+            router.push(`/reservation/reviews/create?reservation_id=${r.id}`)
+          }
+        >
+          口コミを書く
+        </Button>
+      )}
 
             </CardContent>
           </Card>

@@ -21,6 +21,7 @@ export type Reservation = {
   price_snapshot: number
   plan: Plan
   trainer: Trainer
+  review?: Review | null
 }
 
 export type TrainerReservation = {
@@ -35,4 +36,32 @@ export type Like = {
   id: number
   trainer_id: number
   user_id: number
+}
+
+export type Review = {
+  id: number
+  reservation_id: number
+  trainer_id: number
+  style: number
+  talk: number
+  logic: number
+  pace: number
+  distance: number
+  created_at?: string
+  updated_at?: string
+
+  trainer?: {
+    id: number
+    user: {
+      name: string
+    }
+  }
+}
+
+export type ReviewSummary = {
+  style: number | null
+  talk: number | null
+  logic: number | null
+  pace: number | null
+  distance: number | null
 }

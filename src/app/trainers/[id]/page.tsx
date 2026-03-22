@@ -2,7 +2,7 @@
 
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
-import { Trainer } from "@/types"
+import { Trainer, ReviewSummary } from "@/types"
 import {
   Box,
   Card,
@@ -23,6 +23,7 @@ export default function TrainerDetailPage() {
 
   const [trainer, setTrainer] = useState<Trainer | null>(null);
   const [loading, setLoading] = useState(true);
+  const [summary, setSummary] = useState<ReviewSummary | null>(null)
 
   useEffect(() => {
     if (!id) return;
@@ -45,6 +46,24 @@ export default function TrainerDetailPage() {
 
     fetchTrainer();
   }, [id]);
+
+  useEffect(() => {
+    if (!id) return
+
+    const fetchSummary = async () => {
+      try {
+        const res = await fetch(`${API_URL}/api/reviews/summary/${id}`, {
+          credentials: "include"
+        })
+        const data = await res.json()
+        setSummary(data)
+      } catch (err) {
+        console.error(err)
+      }
+    }
+
+    fetchSummary()
+  }, [id])
 
   if (loading) return <div>Loading...</div>;
   if (!trainer) return <div>Trainer not found</div>;
@@ -87,6 +106,21 @@ export default function TrainerDetailPage() {
                 {/* いいね */}
 
           <TrainerLikeButton trainerId={trainer.id} />
+
+          {/* 口コミの平均を表示 */}
+          {summary && (
+            <Box sx={{ mt: 3 }}>
+              <Typography variant="h6" mb={1}>
+                口コミ平均
+              </Typography>
+
+              <Typography>指導スタイル: {summary.style ?? "-"}</Typography>
+              <Typography>会話量: {summary.talk ?? "-"}</Typography>
+              <Typography>論理性: {summary.logic ?? "-"}</Typography>
+              <Typography>ペース: {summary.pace ?? "-"}</Typography>
+              <Typography>距離感: {summary.distance ?? "-"}</Typography>
+            </Box>
+          )}
 
           <Typography sx={{ mt: 3, fontWeight: "bold" }}>プラン一覧</Typography>
           <Grid container spacing={2} sx={{ mt: 1 }}>
