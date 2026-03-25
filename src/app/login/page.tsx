@@ -56,6 +56,7 @@ useEffect(() => {
         headers: {
         "Content-Type": "application/json", // JSON形式でデータを送ることを示す
         "Accept": "application/json", // サーバーからJSON形式のレスポンスを期待することを示す
+        "X-Requested-With": "XMLHttpRequest", // トークン
         // "X-XSRF-TOKEN": xsrfToken // 取得したXSRFトークンをヘッダーに含める
       },
         body: JSON.stringify({ email, password }), // ログインに必要なデータをJSON形式で送る
