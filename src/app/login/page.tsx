@@ -50,7 +50,7 @@ useEffect(() => {
 
 
       // ③ ログインAPIにリクエストを送る
-      const res = await fetch(`${API_URL}/login`, {
+      const res = await fetch(`${API_URL}/api/login`, {
         method: "POST",
         credentials: "include", // Cookieをリクエストに含めるためのオプション
         headers: {
