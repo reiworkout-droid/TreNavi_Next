@@ -39,24 +39,24 @@ useEffect(() => {
         credentials: "include" // Cookieをリクエストに含めるためのオプション
       })
 
-      // ② CookieからXSRF-TOKEN取得
-      const xsrfToken = decodeURIComponent(
-        // CookieからXSRF-TOKENを取得する処理
-        document.cookie
-          .split("; ") // Cookieを分割して配列にする
-          .find(row => row.startsWith("XSRF-TOKEN=")) // "XSRF-TOKEN="で始まるCookieを見つける
-          ?.split("=")[1] || "" // 見つかったCookieを"="で分割して値を取得、見つからなければ空文字列
-      )
+      // // ② CookieからXSRF-TOKEN取得
+      // const xsrfToken = decodeURIComponent(
+      //   // CookieからXSRF-TOKENを取得する処理
+      //   document.cookie
+      //     .split("; ") // Cookieを分割して配列にする
+      //     .find(row => row.startsWith("XSRF-TOKEN=")) // "XSRF-TOKEN="で始まるCookieを見つける
+      //     ?.split("=")[1] || "" // 見つかったCookieを"="で分割して値を取得、見つからなければ空文字列
+      // )
 
 
       // ③ ログインAPIにリクエストを送る
-      const res = await fetch(`${API_URL}/login`, {
+      const res = await fetch(`${API_URL}/api/login`, {
         method: "POST",
         credentials: "include", // Cookieをリクエストに含めるためのオプション
         headers: {
         "Content-Type": "application/json", // JSON形式でデータを送ることを示す
         "Accept": "application/json", // サーバーからJSON形式のレスポンスを期待することを示す
-        "X-XSRF-TOKEN": xsrfToken // 取得したXSRFトークンをヘッダーに含める
+        // "X-XSRF-TOKEN": xsrfToken // 取得したXSRFトークンをヘッダーに含める
       },
         body: JSON.stringify({ email, password }), // ログインに必要なデータをJSON形式で送る
     });
