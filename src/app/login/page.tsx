@@ -163,8 +163,13 @@ const handleRegister = async () => {
             </button>
           </div>
 
-          <form onSubmit={handleAuth}>
-
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              handleAuth(e);
+            }}
+          >
+            
           {!isLogin && (
             <TextField
               label="Name"
