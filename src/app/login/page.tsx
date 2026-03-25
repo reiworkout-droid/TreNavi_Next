@@ -39,6 +39,8 @@ useEffect(() => {
         credentials: "include" // Cookieをリクエストに含めるためのオプション
       })
 
+      console.log(document.cookie)
+
       // ② CookieからXSRF-TOKEN取得
       const xsrfToken = decodeURIComponent(
         // CookieからXSRF-TOKENを取得する処理
