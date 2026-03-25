@@ -50,7 +50,7 @@ useEffect(() => {
 
 
       // ③ ログインAPIにリクエストを送る
-      const res = await fetch(`${API_URL}/api/login`, {
+      const res = await fetch(`${API_URL}/login`, {
         method: "POST",
         credentials: "include", // Cookieをリクエストに含めるためのオプション
         headers: {
@@ -169,7 +169,7 @@ const handleRegister = async () => {
               handleAuth(e);
             }}
           >
-            
+
           {!isLogin && (
             <TextField
               label="Name"
