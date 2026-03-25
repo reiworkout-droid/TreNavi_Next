@@ -26,21 +26,23 @@ export default function TrainerLikeButton({ trainerId }: Props) {
         credentials: "include",
       });
 
-      const res = await fetch(`${API_URL}/api/trainers/liked`, {
+      // いいね状態
+      const resStatus = await fetch(`${API_URL}/api/trainers/${trainerId}/like`, {
         credentials: "include",
         headers: { Accept: "application/json" },
       });
+      if (!resStatus.ok) throw new Error("liked取得失敗");
+      const statusData: { is_liked: boolean } = await resStatus.json();
+      setLiked(statusData.is_liked);
 
-      if (!res.ok) throw new Error("liked取得失敗");
-
-      const data: Trainer[] = await res.json();
-
-      // 👍 いいね状態
-      const isLiked = data.some((tr) => tr.id === trainerId);
-      setLiked(isLiked);
-
-      // 👍 件数（簡易版：length）
-      setCount(data.length);
+      // いいね件数
+      const resCount = await fetch(`${API_URL}/api/trainers/${trainerId}/like/count`, {
+        credentials: "include",
+        headers: { Accept: "application/json" },
+      });
+      if (!resCount.ok) throw new Error("like件数取得失敗");
+      const countData: { count: number } = await resCount.json();
+      setCount(countData.count);
 
     } catch (err) {
       console.error("初期いいね取得失敗", err);

@@ -1,81 +1,78 @@
 "use client"
 
 import { useEffect, useState } from "react";
-import { Trainer } from "@/types"
-import { useRouter } from "next/navigation"
+import { Trainer } from "@/types";
+import { useRouter } from "next/navigation";
 import {
   Box,
   Typography,
   Card,
   CardContent,
   Stack
-} from "@mui/material"
+} from "@mui/material";
+import TrainerLikeButton from "@/components/TrainerLikeButton";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL
+const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 export default function LikePage() {
-
-  const router = useRouter()
+  const router = useRouter();
   
   const [likes, setLikes] = useState<Trainer[]>([]);
-  const [loading,setLoading] = useState(true)
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchLikes = async() => {
+    const fetchLikes = async () => {
+      try {
+        await fetch(`${API_URL}/sanctum/csrf-cookie`, { credentials: "include" });
 
-      const res = await fetch(`${API_URL}/api/trainers/liked`, {
-        credentials:"include"   
-      })
+        const res = await fetch(`${API_URL}/api/trainers/liked`, {
+          credentials: "include",
+          headers: { Accept: "application/json" },
+        });
 
-      const data: Trainer[] = await res.json()
+        const json = await res.json();
 
-      setLikes(data)
-      setLoading(false)
-    }
-    fetchLikes()
+        // 配列かどうか保証
+        const data: Trainer[] = Array.isArray(json) ? json : [];
+        setLikes(data);
+      } catch (err) {
+        console.error("いいね一覧取得失敗", err);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  }, [])
+    fetchLikes();
+  }, []);
 
-  if(loading) return <Typography p={4}>Loading...</Typography> 
-  
+  if (loading) return <Typography p={4}>Loading...</Typography>;
+
   return (
-    <>
-    <Box sx={{p:4,maxWidth:600,mx:"auto"}}>
-
+    <Box sx={{ p: 4, maxWidth: 600, mx: "auto" }}>
       <Typography variant="h5" mb={3}>
         いいね一覧
       </Typography>
 
       <Stack spacing={2}>
-        {/* いいねのレコードを１件ずつ取り出す */}
         {likes.map((trainer) => (
           <Card key={trainer.id}>
             <CardContent>
-              <Typography variant="h6"
-                  sx={{ cursor: "pointer", "&:hover": { textDecoration: "underline" } }}
-                  onClick={() => router.push(`/trainers/${trainer.id}`)}>
+              <Typography
+                variant="h6"
+                sx={{ cursor: "pointer", "&:hover": { textDecoration: "underline" } }}
+                onClick={() => router.push(`/trainers/${trainer.id}`)}
+              >
                 👤 {trainer.user?.name}
               </Typography>
 
-              <Typography>
-                📝 {trainer.record}
-              </Typography>
+              <Typography>📝 {trainer.record}</Typography>
+              <Typography>💰 最安 ¥{trainer.plans?.[0]?.price ?? "なし"}</Typography>
 
-              <Typography>
-                💰 最安 ¥{trainer.plans?.[0]?.price ?? "なし"}
-              </Typography>
-
-              <Typography>
-                ❤️ {trainer.likes_count ?? 0}
-              </Typography>
-
+              <TrainerLikeButton trainerId={trainer.id} />
             </CardContent>
           </Card>
         ))}
       </Stack>
-
     </Box>
-    
-    </>
   );
 }

@@ -70,6 +70,12 @@ export type Trainer = {
   plans: Plan[]
   likes_count: number
   is_liked?: boolean
+  // レビュー平均
+  style_avg?: number
+  talk_avg?: number
+  logic_avg?: number
+  pace_avg?: number
+  distance_avg?: number
 }
 
 export type TrainerSearch = Trainer & {

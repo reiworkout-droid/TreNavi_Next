@@ -182,7 +182,7 @@ useEffect(()=>{
       <Card sx={{ mb: 3 }}>
         <CardContent>
           <Typography variant="h6">TreNavi診断</Typography>
-          <Typography sx={{ mt: 1 }}>あなたのトレーニータイプを診断しましょう</Typography>
+          <Typography sx={{ mt: 1 }}>理想のトレーナータイプを診断しましょう</Typography>
           <Button sx={{ mt: 2 }} onClick={handleDiagnosisClick}>
             診断する
           </Button>

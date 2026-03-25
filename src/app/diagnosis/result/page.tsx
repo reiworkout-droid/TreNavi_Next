@@ -68,7 +68,7 @@ export default function DiagnosisResultPage() {
       <Stack spacing={2} mt={4}>
         <Button
           variant="contained"
-          onClick={() => router.push("/search")}
+          onClick={() => router.push("/trainers")}
         >
           トレーナーを探す
         </Button>
