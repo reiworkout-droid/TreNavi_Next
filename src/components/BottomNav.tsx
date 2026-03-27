@@ -13,35 +13,59 @@ import PersonIcon from "@mui/icons-material/Person";
 
 import { useRouter, usePathname } from "next/navigation";
 import { useState, useEffect } from "react";
-import { useAuth } from "@/context/AuthContext";
 
 export default function BottomNav() {
 
   const router = useRouter();
   const pathname = usePathname();
-  const { user } = useAuth();
 
   const [value,setValue] = useState(0);
 
-  const isTrainer = !!user?.trainer?.id;
+  const isTrainerPage = pathname.startsWith("/trainer");
 
   // =============================
   // 現在位置判定
   // =============================
   useEffect(() => {
 
-    if(pathname.startsWith("/home")) setValue(0);
+    if(pathname.startsWith("/home") || pathname.startsWith("/trainer/home")) setValue(0);
     else if(pathname.startsWith("/trainers")) setValue(1);
-    else if(pathname.startsWith("/reservations")) setValue(2);
-    else if(pathname.startsWith("/trainer") || pathname.startsWith("/profile")) setValue(3);
+    else if(pathname.startsWith("/reservation") || pathname.startsWith("/trainer/reservations")) setValue(2);
+    else if(pathname.startsWith("/profile") || pathname.startsWith("/trainer/profile")) setValue(3);
 
   },[pathname]);
 
   // =============================
-  // プロフィール遷移先
+  // Home遷移
+  // =============================
+  const goHome = () => {
+    if (isTrainerPage) {
+      router.push("/trainer/home");
+    } else {
+      router.push("/home");
+    }
+  };
+
+  // =============================
+  // 予約遷移
+  // =============================
+  const goReservation = () => {
+    if (isTrainerPage) {
+      router.push("/trainer/reservations");
+    } else {
+      router.push("/reservation");
+    }
+  };
+
+  // =============================
+  // プロフィール遷移
   // =============================
   const goProfile = () => {
+    if (isTrainerPage) {
+      router.push("/trainer/profile");
+    } else {
       router.push("/profile");
+    }
   };
 
   return (
@@ -56,15 +80,12 @@ export default function BottomNav() {
       elevation={3}
     >
 
-      <BottomNavigation
-        showLabels
-        value={value}
-      >
+      <BottomNavigation showLabels value={value}>
 
         <BottomNavigationAction
           label="Home"
           icon={<HomeIcon />}
-          onClick={()=>router.push("/home")}
+          onClick={goHome}
         />
 
         <BottomNavigationAction
@@ -76,7 +97,7 @@ export default function BottomNav() {
         <BottomNavigationAction
           label="予約"
           icon={<EventIcon />}
-          onClick={()=>router.push("/reservations")}
+          onClick={goReservation}
         />
 
         <BottomNavigationAction
