@@ -30,9 +30,9 @@ export default function TrainerHomePage() {
         <Button
           variant="outlined"
           size="large"
-          onClick={() => router.push("/trainer/plan/[id]/edit/")}
+          onClick={() => router.push("/trainer/plan")}
         >
-          プラン変更
+          プラン一覧
         </Button>
       </Stack>
     </Box>

@@ -17,21 +17,25 @@ import { useAuth } from "@/context/AuthContext";
 export default function Header() {
   const router = useRouter();
   const pathname = usePathname();
-  const onTrainerHome = pathname?.startsWith("/trainer/home");
-
-  const { user, logout } = useAuth();
+  const { user, logout, refreshUser } = useAuth();
 
   const isTrainer = !!user?.trainer?.id;
 
+  // ログアウト処理
   const handleLogout = async () => {
     await logout();
     router.push("/login");
   };
 
+  // トレーナー登録後に即UIを更新
+  const handleRegisterTrainer = async () => {
+    router.push("/register_trainer");
+    await refreshUser(); // AuthContext からユーザーを再取得
+  };
+
   return (
     <AppBar position="fixed" color="primary" elevation={1}>
       <Toolbar sx={{ display: "flex", justifyContent: "space-between" }}>
-
         {/* ロゴ */}
         <Typography
           variant="h6"
@@ -43,22 +47,22 @@ export default function Header() {
 
         {/* 右側 */}
         <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-
           <IconButton color="inherit">
             <NotificationsIcon />
           </IconButton>
 
-          {/* トレーナー関連のボタン */}
+          {/* トレーナー登録 */}
           {user && !isTrainer && (
             <Button
               color="inherit"
               size="small"
-              onClick={() => router.push("/register_trainer")}
+              onClick={handleRegisterTrainer}
             >
               登録
             </Button>
-          )}       
+          )}
 
+          {/* トレーナー切替 */}
           {isTrainer && (
             <>
               <Button
@@ -82,20 +86,22 @@ export default function Header() {
               )}
             </>
           )}
-          
+
           {/* ログイン/ログアウト */}
           {user ? (
             <Button color="inherit" size="small" onClick={handleLogout}>
               Logout
             </Button>
           ) : (
-            <Button color="inherit" size="small" onClick={() => router.push("/login")}>
+            <Button
+              color="inherit"
+              size="small"
+              onClick={() => router.push("/login")}
+            >
               Login
             </Button>
           )}
-
         </Box>
-
       </Toolbar>
     </AppBar>
   );

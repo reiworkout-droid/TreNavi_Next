@@ -96,12 +96,8 @@ console.log(
           最安料金 {trainer.plans_min_price ?? "未設定"}円
         </Typography>
 
-        <TrainerLikeButton
-          trainerId={trainer.id}
-          initialLiked={trainer.is_liked}
-          initialCount={trainer.likes_count}
-        />
-
+        <TrainerLikeButton trainerId={trainer.id} />
+        
       </CardContent>
     </Card>
   )

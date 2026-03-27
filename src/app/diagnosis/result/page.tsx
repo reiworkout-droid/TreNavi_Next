@@ -1,6 +1,6 @@
 "use client"
 
-import { useSearchParams, useRouter } from "next/navigation"
+import { useRouter } from "next/navigation"
 import {
   Box,
   Typography,
@@ -17,14 +17,38 @@ export default function DiagnosisResultPage() {
   const router = useRouter()
 
   const [type, setType] = useState<string | null>(null)
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-  const fetchUserType = async () => {
-    const res = await fetch(`${API_URL}/api/user`, { credentials: "include" })
-    const data = await res.json()
-    setType(data.user_type || null)
-  }
-  fetchUserType()
+    const fetchUserType = async () => {
+      try {
+        const token = localStorage.getItem("token")
+
+        if (!token) {
+          router.push("/login")
+          return
+        }
+
+        const res = await fetch(`${API_URL}/api/user`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        })
+
+        if (!res.ok) throw new Error("取得失敗")
+
+        const data = await res.json()
+        setType(data.user_type || null)
+
+      } catch (err) {
+        console.error(err)
+        setType(null)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchUserType()
   }, [])
 
   // タイプ説明
@@ -41,6 +65,10 @@ export default function DiagnosisResultPage() {
       default:
         return "バランスよくトレーニングしたいタイプ。どんなスタイルにも適応可能。"
     }
+  }
+
+  if (loading) {
+    return <Typography p={4}>Loading...</Typography>
   }
 
   if (!type) {

@@ -1,3 +1,13 @@
+import { Trainer } from "./trainer";
+
+// APIから取得するユーザー型（Header 用）
+export type ApiUser = {
+  id: number;
+  name: string;
+  email: string;
+  trainer?: Pick<Trainer, "id"> | null;
+};
+
 // ユーザーロールの型定義
 export type UserRole = "trainer" | "client" | "admin";
 
@@ -18,3 +28,4 @@ export type Login ={
     email: string;
     password: string;
 };
+

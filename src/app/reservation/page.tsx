@@ -1,7 +1,7 @@
 "use client"
 import { useRouter } from "next/navigation"
 import { useEffect, useState } from "react"
-import { Reservation, Review } from "@/types"
+import { Reservation } from "@/types"
 import {
   Box,
   Typography,
@@ -15,28 +15,52 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL
 
 export default function ReservationsPage(){
 
-  const router = useRouter();
+  const router = useRouter()
 
   const [reservations,setReservations] = useState<Reservation[]>([])
   const [history, setHistory] = useState<Reservation[]>([])
   const [loading,setLoading] = useState(true)
 
+  // 🔑 共通fetch
+  const fetchWithAuth = async (url: string) => {
+    const token = localStorage.getItem("token")
+
+    if (!token) {
+      router.push("/login")
+      throw new Error("No token")
+    }
+
+    const res = await fetch(url, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+    })
+
+    if (!res.ok) throw new Error("API error")
+
+    return res.json()
+  }
+
   useEffect(()=>{
 
     const fetchReservations = async()=>{
+      try {
+        const [data1, data2] = await Promise.all([
+          fetchWithAuth(`${API_URL}/api/reservations`),
+          fetchWithAuth(`${API_URL}/api/reservations/past`)
+        ])
 
-      const [res1, res2] = await Promise.all([
-        fetch(`${API_URL}/api/reservations`, { credentials:"include" }),
-        fetch(`${API_URL}/api/reservations/past`, { credentials:"include" })
-      ])
+        setReservations(data1)
+        setHistory(data2)
 
-      const data1: Reservation[] = await res1.json()
-      const data2: Reservation[] = await res2.json()
-
-      setReservations(data1)
-      setHistory(data2)
-      setLoading(false)
+      } catch (err) {
+        console.error(err)
+      } finally {
+        setLoading(false)
+      }
     }
+
     fetchReservations()
 
   },[])
@@ -51,7 +75,6 @@ export default function ReservationsPage(){
       </Typography>
 
       <Stack spacing={2}>
-        {/* 予約のレコードを１件ずつ取り出す */}
         {reservations.map((r)=>(
           <Card key={r.id}>
             <CardContent>
@@ -60,9 +83,9 @@ export default function ReservationsPage(){
                 {r.plan.name}
               </Typography>
 
-            <Typography>
+              <Typography>
                 👤 {r.trainer.user.name}
-            </Typography>
+              </Typography>
 
               <Typography>
                 🗓 {new Date(r.reserver_at).toLocaleString()}
@@ -73,7 +96,11 @@ export default function ReservationsPage(){
               </Typography>
 
               <Typography>
-                ステータス: {r.status === "pending" ? "未承認" : r.status === "confirmed" ? "承認済み" : "却下"}
+                ステータス: {
+                  r.status === "pending" ? "未承認" :
+                  r.status === "confirmed" ? "承認済み" :
+                  "却下"
+                }
               </Typography>
 
             </CardContent>
@@ -81,7 +108,7 @@ export default function ReservationsPage(){
         ))}
       </Stack>
       
-      {/* 予約履歴 */}
+      {/* 履歴 */}
       <Typography variant="h5" mt={6} mb={3}>
         予約履歴
       </Typography>
@@ -111,31 +138,31 @@ export default function ReservationsPage(){
                 ステータス: {
                   r.status === "pending" ? "未承認" :
                   r.status === "confirmed" ? "承認済み" :
-                  r.status === "canceled" ? "キャンセル" : "却下"
+                  r.status === "canceled" ? "キャンセル" :
+                  "却下"
                 }
               </Typography>
-              
-            {/* 🔥 ここ追加 */}
-      {/* 🔥 分岐 */}
-      {r.review ? (
-        <Button
-          variant="contained"
-          sx={{ mt: 2 }}
-          onClick={() => router.push(`/reservation/reviews/${r.review!.id}`)}
-        >
-          投稿を見る
-        </Button>
-      ) : (
-        <Button
-          variant="outlined"
-          sx={{ mt: 2 }}
-          onClick={() =>
-            router.push(`/reservation/reviews/create?reservation_id=${r.id}`)
-          }
-        >
-          口コミを書く
-        </Button>
-      )}
+
+              {/* レビュー分岐 */}
+              {r.review ? (
+                <Button
+                  variant="contained"
+                  sx={{ mt: 2 }}
+                  onClick={() => router.push(`/reservation/reviews/${r.review?.id}`)}
+                >
+                  投稿を見る
+                </Button>
+              ) : (
+                <Button
+                  variant="outlined"
+                  sx={{ mt: 2 }}
+                  onClick={() =>
+                    router.push(`/reservation/reviews/create?reservation_id=${r.id}`)
+                  }
+                >
+                  口コミを書く
+                </Button>
+              )}
 
             </CardContent>
           </Card>

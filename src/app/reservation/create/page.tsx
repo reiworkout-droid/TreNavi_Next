@@ -18,12 +18,39 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL
 export default function ReservationCreatePage() {
   const router = useRouter()
 
-  // ⚠ クライアントサイドでのみ URL パラメータを取得
   const [planId, setPlanId] = useState<string | null>(null)
   const [nameParam, setNameParam] = useState<string | null>(null)
   const [priceParam, setPriceParam] = useState<string | null>(null)
   const [durationParam, setDurationParam] = useState<string | null>(null)
 
+  const [plan, setPlan] = useState<SimplePlan | null>(null)
+  const [reservedAt, setReservedAt] = useState("")
+  const [loading, setLoading] = useState(true)
+
+  // 🔑 共通fetch
+  const fetchWithAuth = async (url: string, options: RequestInit = {}) => {
+    const token = localStorage.getItem("token")
+
+    if (!token) {
+      router.push("/login")
+      throw new Error("No token")
+    }
+
+    const res = await fetch(url, {
+      ...options,
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+        ...(options.headers || {}),
+      },
+    })
+
+    if (!res.ok) throw new Error("API error")
+
+    return res.json()
+  }
+
+  // URLパラメータ取得
   useEffect(() => {
     const params = new URLSearchParams(window.location.search)
     setPlanId(params.get("plan_id"))
@@ -32,18 +59,14 @@ export default function ReservationCreatePage() {
     setDurationParam(params.get("duration"))
   }, [])
 
-  const [plan, setPlan] = useState<SimplePlan | null>(null)
-  const [reservedAt, setReservedAt] = useState("")
-  const [loading, setLoading] = useState(true)
-
-  // プラン情報の取得
+  // プラン取得
   useEffect(() => {
     if (!planId) {
       setLoading(false)
       return
     }
 
-    // URLパラメータから取得できる場合はそれを使う
+    // URLパラメータ優先
     if (nameParam && priceParam && durationParam) {
       setPlan({
         id: Number(planId),
@@ -55,14 +78,9 @@ export default function ReservationCreatePage() {
       return
     }
 
-    // APIからプラン取得
     const fetchPlan = async () => {
       try {
-        const res = await fetch(`${API_URL}/api/plans/${planId}`, {
-          credentials: "include"
-        })
-        if (!res.ok) throw new Error("プラン取得失敗")
-        const data = await res.json()
+        const data = await fetchWithAuth(`${API_URL}/api/plans/${planId}`)
         setPlan(data)
       } catch (err) {
         console.error(err)
@@ -70,10 +88,11 @@ export default function ReservationCreatePage() {
         setLoading(false)
       }
     }
+
     fetchPlan()
   }, [planId, nameParam, priceParam, durationParam])
 
-  // 予約作成関数
+  // 予約作成
   const createReservation = async () => {
     if (!reservedAt) {
       alert("日時を選択してください")
@@ -81,39 +100,20 @@ export default function ReservationCreatePage() {
     }
 
     try {
-      await fetch(`${API_URL}/sanctum/csrf-cookie`, { credentials: "include" })
-      const xsrfToken = document.cookie
-        .split("; ")
-        .find(row => row.startsWith("XSRF-TOKEN="))
-        ?.split("=")[1]
-
-      if (!xsrfToken) throw new Error("XSRFトークンが取得できません")
-
-      const res = await fetch(`${API_URL}/api/reservations`, {
+      await fetchWithAuth(`${API_URL}/api/reservations`, {
         method: "POST",
-        credentials: "include",
-        headers: {
-          "Content-Type": "application/json",
-          "Accept": "application/json",
-          "X-XSRF-TOKEN": decodeURIComponent(xsrfToken)
-        },
         body: JSON.stringify({
           plan_id: planId,
           reserver_at: reservedAt
         })
       })
 
-      if (!res.ok) {
-        const errorData = await res.json().catch(() => ({ message: "不明なエラー" }))
-        alert(`予約に失敗しました: ${errorData.message}`)
-        return
-      }
-
       alert("予約しました！")
       router.push("/reservation")
+
     } catch (err) {
       console.error("通信エラー:", err)
-      alert("通信エラーが発生しました")
+      alert("予約に失敗しました")
     }
   }
 

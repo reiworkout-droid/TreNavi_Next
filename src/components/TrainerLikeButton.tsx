@@ -4,54 +4,82 @@ import { useState, useEffect } from "react";
 import { IconButton, Typography, Box } from "@mui/material";
 import FavoriteIcon from "@mui/icons-material/Favorite";
 import FavoriteBorderIcon from "@mui/icons-material/FavoriteBorder";
-import { Trainer } from "@/types";
+import { useRouter } from "next/navigation";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 interface Props {
   trainerId: number;
-  initialLiked?: boolean;
-  initialCount?: number;
 }
 
 export default function TrainerLikeButton({ trainerId }: Props) {
+
+  const router = useRouter();
+
   const [liked, setLiked] = useState(false);
   const [count, setCount] = useState(0);
   const [loading, setLoading] = useState(true);
 
-  // 初期状態取得
-  const fetchLikedStatus = async () => {
-    try {
-      await fetch(`${API_URL}/sanctum/csrf-cookie`, {
-        credentials: "include",
-      });
+  // 🔑 共通fetch（改善版）
+  const fetchWithAuth = async (url: string, options: RequestInit = {}) => {
+    const token = localStorage.getItem("token");
 
-      // いいね状態
-      const resStatus = await fetch(`${API_URL}/api/trainers/${trainerId}/like`, {
-        credentials: "include",
-        headers: { Accept: "application/json" },
-      });
-      if (!resStatus.ok) throw new Error("liked取得失敗");
-      const statusData: { is_liked: boolean } = await resStatus.json();
-      setLiked(statusData.is_liked);
-
-      // いいね件数
-      const resCount = await fetch(`${API_URL}/api/trainers/${trainerId}/like/count`, {
-        credentials: "include",
-        headers: { Accept: "application/json" },
-      });
-      if (!resCount.ok) throw new Error("like件数取得失敗");
-      const countData: { count: number } = await resCount.json();
-      setCount(countData.count);
-
-    } catch (err) {
-      console.error("初期いいね取得失敗", err);
-    } finally {
-      setLoading(false);
+    if (!token) {
+      router.push("/login");
+      throw new Error("No token");
     }
+
+    const res = await fetch(url, {
+      ...options,
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+        ...(options.headers || {}),
+      },
+    });
+
+    // 👇 ここ重要
+    if (res.status === 401) {
+      localStorage.removeItem("token");
+      router.push("/login");
+      throw new Error("Unauthorized");
+    }
+
+    if (!res.ok) {
+      const text = await res.text();
+      console.error("API error:", text);
+      throw new Error("API error");
+    }
+
+    return res.json();
   };
 
+  // 初期取得
   useEffect(() => {
+    const fetchLikedStatus = async () => {
+      try {
+        const statusData = await fetchWithAuth(
+          `${API_URL}/api/trainers/${trainerId}/like`
+        );
+        setLiked(statusData.is_liked);
+
+        // 👇 countは公開APIならそのままでOK
+        const resCount = await fetch(
+          `${API_URL}/api/trainers/${trainerId}/like/count`
+        );
+
+        if (!resCount.ok) throw new Error("count取得失敗");
+
+        const countData = await resCount.json();
+        setCount(countData.count);
+
+      } catch (err) {
+        console.error("初期いいね取得失敗", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
     fetchLikedStatus();
   }, [trainerId]);
 
@@ -60,32 +88,13 @@ export default function TrainerLikeButton({ trainerId }: Props) {
     setLoading(true);
 
     try {
-      await fetch(`${API_URL}/sanctum/csrf-cookie`, {
-        credentials: "include",
-      });
-
-      const xsrfToken = document.cookie
-        .split("; ")
-        .find((row) => row.startsWith("XSRF-TOKEN="))
-        ?.split("=")[1] ?? "";
-
       const method = liked ? "DELETE" : "POST";
 
-      const res = await fetch(
+      await fetchWithAuth(
         `${API_URL}/api/trainers/${trainerId}/like`,
-        {
-          method,
-          credentials: "include",
-          headers: {
-            "X-XSRF-TOKEN": decodeURIComponent(xsrfToken),
-            Accept: "application/json",
-          },
-        }
+        { method }
       );
 
-      if (!res.ok) throw new Error("いいね操作失敗");
-
-      // UI即更新
       setLiked(!liked);
       setCount((prev) => (liked ? prev - 1 : prev + 1));
 

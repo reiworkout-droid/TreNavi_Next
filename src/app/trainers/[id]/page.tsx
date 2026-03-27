@@ -2,7 +2,7 @@
 
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
-import { Trainer, ReviewSummary } from "@/types"
+import { Trainer, ReviewSummary } from "@/types";
 import {
   Box,
   Card,
@@ -19,23 +19,42 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL;
 export default function TrainerDetailPage() {
   const router = useRouter();
   const params = useParams() as { id: string };
-  const id = parseInt(params.id, 10); // URLから取得した文字列を数値に変換
+  const id = parseInt(params.id, 10);
 
   const [trainer, setTrainer] = useState<Trainer | null>(null);
   const [loading, setLoading] = useState(true);
-  const [summary, setSummary] = useState<ReviewSummary | null>(null)
+  const [summary, setSummary] = useState<ReviewSummary | null>(null);
 
+  // 🔑 共通fetch
+  const fetchWithAuth = async (url: string) => {
+    const token = localStorage.getItem("token");
+
+    if (!token) {
+      router.push("/login");
+      throw new Error("No token");
+    }
+
+    const res = await fetch(url, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+    });
+
+    if (!res.ok) throw new Error("API error");
+
+    return res.json();
+  };
+
+  // ----------------------
+  // トレーナー取得
+  // ----------------------
   useEffect(() => {
     if (!id) return;
 
     const fetchTrainer = async () => {
       try {
-        const res = await fetch(`${API_URL}/api/trainers/${id}`, {
-            credentials: "include",
-        });
-        console.log(`${API_URL}/api/trainers/${id}`)
-        const data = await res.json();
-        console.log(data);  // <- user があるか確認
+        const data = await fetchWithAuth(`${API_URL}/api/trainers/${id}`);
         setTrainer(data);
       } catch (err) {
         console.error(err);
@@ -47,23 +66,29 @@ export default function TrainerDetailPage() {
     fetchTrainer();
   }, [id]);
 
+  // ----------------------
+  // レビュー集計取得
+  // ----------------------
   useEffect(() => {
-    if (!id) return
+    if (!id) return;
 
     const fetchSummary = async () => {
       try {
-        const res = await fetch(`${API_URL}/api/reviews/summary/${id}`, {
-          credentials: "include"
-        })
-        const data = await res.json()
-        setSummary(data)
+        // ここは公開APIならトークン不要でもOK
+        const res = await fetch(`${API_URL}/api/reviews/summary/${id}`);
+        const data = await res.json();
+        setSummary(data);
       } catch (err) {
-        console.error(err)
+        console.error(err);
       }
-    }
+    };
 
-    fetchSummary()
-  }, [id])
+    fetchSummary();
+  }, [id]);
+
+  // ----------------------
+  // render
+  // ----------------------
 
   if (loading) return <div>Loading...</div>;
   if (!trainer) return <div>Trainer not found</div>;
@@ -80,11 +105,10 @@ export default function TrainerDetailPage() {
               width: "100%",
               height: 300,
               objectFit: "cover",
-              borderTopLeftRadius: 4,
-              borderTopRightRadius: 4,
             }}
           />
         )}
+
         <CardContent>
           <Typography variant="h4" sx={{ mb: 2 }}>
             {trainer.user.name}
@@ -102,12 +126,14 @@ export default function TrainerDetailPage() {
             専門: {trainer.specialities.map((s) => s.name).join(", ")}
           </Typography>
 
-          <Typography sx={{ mb: 1 }}>実績: {trainer.record}</Typography>
-                {/* いいね */}
+          <Typography sx={{ mb: 1 }}>
+            実績: {trainer.record}
+          </Typography>
 
+          {/* いいね */}
           <TrainerLikeButton trainerId={trainer.id} />
 
-          {/* 口コミの平均を表示 */}
+          {/* 口コミ */}
           {summary && (
             <Box sx={{ mt: 3 }}>
               <Typography variant="h6" mb={1}>
@@ -122,19 +148,29 @@ export default function TrainerDetailPage() {
             </Box>
           )}
 
-          <Typography sx={{ mt: 3, fontWeight: "bold" }}>プラン一覧</Typography>
+          {/* プラン */}
+          <Typography sx={{ mt: 3, fontWeight: "bold" }}>
+            プラン一覧
+          </Typography>
+
           <Grid container spacing={2} sx={{ mt: 1 }}>
             {trainer.plans.map((plan) => (
-              <Grid size={{xs:12, md:4}} key={plan.id}>
+              <Grid size={{ xs: 12, md: 4 }} key={plan.id}>
                 <Card>
                   <CardContent>
                     <Typography variant="h6">{plan.name}</Typography>
                     <Typography>⏱ {plan.duration_minutes}分</Typography>
-                    <Typography sx={{ fontWeight: "bold", mt: 1 }}>💰 {plan.price}円</Typography>
+                    <Typography sx={{ fontWeight: "bold", mt: 1 }}>
+                      💰 {plan.price}円
+                    </Typography>
+
                     <Button
                       variant="contained"
                       onClick={() =>
-                      router.push(`/reservation/create?plan_id=${plan.id}&name=${plan.name}&price=${plan.price}&duration=${plan.duration_minutes}`)                      }
+                        router.push(
+                          `/reservation/create?plan_id=${plan.id}&name=${plan.name}&price=${plan.price}&duration=${plan.duration_minutes}`
+                        )
+                      }
                     >
                       予約する
                     </Button>
@@ -147,10 +183,6 @@ export default function TrainerDetailPage() {
           <Typography sx={{ mt: 3 }}>{trainer.bio}</Typography>
         </CardContent>
       </Card>
-    {/* <Button color="inherit" onClick={() => router.push("/search")}>
-    戻る
-    </Button> */}
-
     </Box>
   );
 }

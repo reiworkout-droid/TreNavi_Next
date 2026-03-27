@@ -36,7 +36,19 @@ export default function TrainerProfileEditPage() {
 
   const router = useRouter()
 
-  // 基本情報
+  // 🔑 トークン
+  const getToken = () => {
+    const token = localStorage.getItem("token")
+    if (!token) {
+      router.push("/login")
+      throw new Error("No token")
+    }
+    return token
+  }
+
+  // =============================
+  // state
+  // =============================
   const [name,setName] = useState("")
   const [tel,setTel] = useState("")
   const [birth,setBirth] = useState("")
@@ -44,7 +56,6 @@ export default function TrainerProfileEditPage() {
   const [bio,setBio] = useState("")
   const [loading,setLoading] = useState(true)
 
-  // エリア
   const [prefectures,setPrefectures] = useState<Prefecture[]>([])
   const [cities,setCities] = useState<City[]>([])
   const [areas,setAreas] = useState<Area[]>([])
@@ -53,255 +64,190 @@ export default function TrainerProfileEditPage() {
   const [selectedCity,setSelectedCity] = useState<number | null>(null)
   const [selectedAreas,setSelectedAreas] = useState<number[]>([])
 
-  // カテゴリ
   const [categories,setCategories] = useState<Category[]>([])
   const [specialities,setSpecialities] = useState<Speciality[]>([])
   const [selectedCategories,setSelectedCategories] = useState<number[]>([])
   const [selectedSpecialities,setSelectedSpecialities] = useState<number[]>([])
 
-  // プラン
   const [plans,setPlans] = useState<Plan[]>([])
 
-  // 画像
   const [image,setImage] = useState<File | null>(null)
   const [imagePreview,setImagePreview] = useState<string | null>(null)
 
+  // =============================
+  // 初期化
+  // =============================
   useEffect(()=>{
 
     const init = async()=>{
 
-      console.log("===== INIT START =====")
+      try{
 
-      // マスター取得
-      const [prefsRes,catsRes,specsRes] = await Promise.all([
-        fetch(`${API_URL}/api/prefectures`),
-        fetch(`${API_URL}/api/categories`),
-        fetch(`${API_URL}/api/specialities`)
-      ])
+        const token = getToken()
 
-      const prefs:Prefecture[] = await prefsRes.json()
-      const cats:Category[] = await catsRes.json()
-      const specs:Speciality[] = await specsRes.json()
+        // マスター
+        const [prefsRes,catsRes,specsRes] = await Promise.all([
+          fetch(`${API_URL}/api/prefectures`),
+          fetch(`${API_URL}/api/categories`),
+          fetch(`${API_URL}/api/specialities`)
+        ])
 
-      console.log("PREFECTURES",prefs)
-      console.log("CATEGORIES",cats)
-      console.log("SPECIALITIES",specs)
+        setPrefectures(await prefsRes.json())
+        setCategories(await catsRes.json())
+        setSpecialities(await specsRes.json())
 
-      setPrefectures(prefs)
-      setCategories(cats)
-      setSpecialities(specs)
-
-      // CSRF
-      await fetch(`${API_URL}/sanctum/csrf-cookie`,{credentials:"include"})
-
-      const xsrfToken = decodeURIComponent(
-        document.cookie.split("; ")
-        .find(row=>row.startsWith("XSRF-TOKEN="))
-        ?.split("=")[1] ?? ""
-      )
-
-      console.log("XSRF TOKEN",xsrfToken)
-
-      // プロフィール取得
-      const res = await fetch(`${API_URL}/api/trainers/profile`,{
-        credentials:"include",
-        headers:{
-          Accept:"application/json",
-          "X-XSRF-TOKEN":xsrfToken
-        }
-      })
-
-      const data = await res.json()
-
-      console.log("===== PROFILE DATA =====")
-      console.log(data)
-
-      // 基本情報
-      setName(data.user.name)
-      setTel(data.tel ?? "")
-      setBirth(data.birth ?? "")
-      setRecord(data.record ?? "")
-      setBio(data.bio ?? "")
-
-      console.log("BASIC INFO",{
-        name:data.user.name,
-        tel:data.tel,
-        birth:data.birth,
-        record:data.record
-      })
-
-      // カテゴリ
-      const catIds = data.categories.map((c:Category)=>c.id)
-      const specIds = data.specialities.map((s:Speciality)=>s.id)
-
-      console.log("CATEGORY IDS",catIds)
-      console.log("SPECIALITY IDS",specIds)
-
-      setSelectedCategories(catIds)
-      setSelectedSpecialities(specIds)
-
-      setPlans(data.plans ?? [])
-
-      // エリア復元
-      if(data.areas && data.areas.length > 0){
-
-        console.log("AREAS RAW",data.areas)
-
-        const firstArea = data.areas[0]
-
-        const prefId = firstArea.city.prefecture.id
-        const cityId = firstArea.city.id
-        const areaIds = data.areas.map((a:Area)=>a.id)
-
-        console.log("RESTORE AREA",{
-          prefId,
-          cityId,
-          areaIds
+        // プロフィール
+        const res = await fetch(`${API_URL}/api/trainers/profile`,{
+          headers:{
+            Authorization:`Bearer ${token}`,
+            Accept:"application/json"
+          }
         })
 
-        setSelectedPrefecture(prefId)
+        const data = await res.json()
 
-        const citiesRes = await fetch(`${API_URL}/api/cities?prefecture_id=${prefId}`)
-        const citiesData:City[] = await citiesRes.json()
+        setName(data.user.name)
+        setTel(data.tel ?? "")
+        setBirth(data.birth ?? "")
+        setRecord(data.record ?? "")
+        setBio(data.bio ?? "")
 
-        console.log("CITIES",citiesData)
+        setSelectedCategories(data.categories.map((c:Category)=>c.id))
+        setSelectedSpecialities(data.specialities.map((s:Speciality)=>s.id))
 
-        setCities(citiesData)
+        setPlans(data.plans ?? [])
 
-        setSelectedCity(cityId)
+        // エリア復元
+        if(data.areas?.length){
 
-        const areasRes = await fetch(`${API_URL}/api/areas?city_id=${cityId}`)
-        const areasData:Area[] = await areasRes.json()
+          const first = data.areas[0]
 
-        console.log("AREAS",areasData)
+          const prefId = first.city.prefecture.id
+          const cityId = first.city.id
 
-        setAreas(areasData)
-        setSelectedAreas(areaIds)
+          setSelectedPrefecture(prefId)
+
+          const citiesData = await (await fetch(`${API_URL}/api/cities?prefecture_id=${prefId}`)).json()
+          setCities(citiesData)
+
+          setSelectedCity(cityId)
+
+          const areasData = await (await fetch(`${API_URL}/api/areas?city_id=${cityId}`)).json()
+          setAreas(areasData)
+
+          setSelectedAreas(data.areas.map((a:Area)=>a.id))
+        }
+
+      }catch(err){
+        console.error(err)
+      }finally{
+        setLoading(false)
       }
 
-      console.log("===== INIT END =====")
-
-      setLoading(false)
     }
 
     init()
 
   },[])
 
-  const fetchCities = async(prefId:number)=>{
-
-    console.log("FETCH CITIES",prefId)
-
-    const res = await fetch(`${API_URL}/api/cities?prefecture_id=${prefId}`)
-    const data:City[] = await res.json()
-
-    console.log("CITIES RESULT",data)
-
-    setCities(data)
-  }
-
-  const fetchAreas = async(cityId:number)=>{
-
-    console.log("FETCH AREAS",cityId)
-
-    const res = await fetch(`${API_URL}/api/areas?city_id=${cityId}`)
-    const data:Area[] = await res.json()
-
-    console.log("AREAS RESULT",data)
-
-    setAreas(data)
-  }
-
+  // =============================
+  // エリア操作
+  // =============================
   const handlePrefectureChange = async(prefId:number)=>{
-    console.log("CHANGE PREF",prefId)
-
     setSelectedPrefecture(prefId)
     setSelectedCity(null)
     setSelectedAreas([])
 
-    await fetchCities(prefId)
+    const data = await (await fetch(`${API_URL}/api/cities?prefecture_id=${prefId}`)).json()
+    setCities(data)
   }
 
   const handleCityChange = async(cityId:number)=>{
-    console.log("CHANGE CITY",cityId)
-
     setSelectedCity(cityId)
     setSelectedAreas([])
 
-    await fetchAreas(cityId)
+    const data = await (await fetch(`${API_URL}/api/areas?city_id=${cityId}`)).json()
+    setAreas(data)
   }
 
+  // =============================
+  // 画像
+  // =============================
   const handleImageChange = (e:React.ChangeEvent<HTMLInputElement>)=>{
-
     const file = e.target.files?.[0]
-
     if(file){
-
-      console.log("IMAGE SELECTED",file)
-
       setImage(file)
       setImagePreview(URL.createObjectURL(file))
     }
   }
 
+  // =============================
+  // プラン削除
+  // =============================
+  const handleDeletePlan = async(id:number)=>{
+
+    if(!confirm("このプランを削除しますか？")) return
+
+    const token = getToken()
+
+    const res = await fetch(`${API_URL}/api/plans/${id}`,{
+      method:"DELETE",
+      headers:{
+        Authorization:`Bearer ${token}`
+      }
+    })
+
+    if(res.ok){
+      setPlans(prev => prev.filter(p => p.id !== id))
+    }
+  }
+
+  // =============================
+  // 更新
+  // =============================
   const handleSubmit = async(e:React.FormEvent)=>{
 
     e.preventDefault()
 
-    console.log("===== SUBMIT START =====")
+    try{
 
-    const formData = new FormData()
+      const token = getToken()
 
-    formData.append("name",name)
-    formData.append("tel",tel)
-    formData.append("birth",birth)
-    formData.append("record",record)
-    formData.append("bio",bio)
+      const formData = new FormData()
 
-    selectedAreas.forEach(id=>formData.append("areas_ids[]",String(id)))
-    selectedCategories.forEach(id=>formData.append("categories_ids[]",String(id)))
-    selectedSpecialities.forEach(id=>formData.append("specialities_ids[]",String(id)))
+      formData.append("name",name)
+      formData.append("tel",tel)
+      formData.append("birth",birth)
+      formData.append("record",record)
+      formData.append("bio",bio)
 
-    if(image){
-      formData.append("profile_image",image)
-    }
+      selectedAreas.forEach(id=>formData.append("areas_ids[]",String(id)))
+      selectedCategories.forEach(id=>formData.append("categories_ids[]",String(id)))
+      selectedSpecialities.forEach(id=>formData.append("specialities_ids[]",String(id)))
 
-    console.log("SUBMIT DATA",{
-      name,
-      tel,
-      birth,
-      record,
-      bio,
-      selectedAreas,
-      selectedCategories,
-      selectedSpecialities
-    })
+      if(image){
+        formData.append("profile_image",image)
+      }
 
-    await fetch(`${API_URL}/sanctum/csrf-cookie`,{credentials:"include"})
+      formData.append("_method","PUT")
 
-    const xsrfToken = decodeURIComponent(
-      document.cookie.split("; ")
-      .find(row=>row.startsWith("XSRF-TOKEN="))
-      ?.split("=")[1] ?? ""
-    )
+      const res = await fetch(`${API_URL}/api/trainers/profile`,{
+        method:"POST",
+        headers:{
+          Authorization:`Bearer ${token}`
+        },
+        body:formData
+      })
 
-    const res = await fetch(`${API_URL}/api/trainers/profile`,{
-      method:"PUT",
-      credentials:"include",
-      headers:{
-        Accept:"application/json",
-        "X-XSRF-TOKEN":xsrfToken
-      },
-      body:formData
-    })
+      if(res.ok){
+        router.push("/trainer/profile")
+      }else{
+        alert("更新失敗")
+      }
 
-    console.log("UPDATE RESULT",res)
-
-    if(res.ok){
-
-      console.log("PROFILE UPDATED SUCCESS")
-
-      router.push("/trainer/profile")
+    }catch(err){
+      console.error(err)
+      alert("通信エラー")
     }
   }
 
@@ -315,163 +261,25 @@ export default function TrainerProfileEditPage() {
       </Typography>
 
       <Card sx={{maxWidth:600}}>
-
         <CardContent>
 
           <Stack spacing={3} component="form" onSubmit={handleSubmit}>
 
-            <TextField
-              label="名前"
-              value={name}
-              onChange={e=>setName(e.target.value)}
-              fullWidth
-            />
+            <TextField label="名前" value={name} onChange={e=>setName(e.target.value)} fullWidth />
+            <TextField label="電話番号" value={tel} onChange={e=>setTel(e.target.value)} fullWidth />
+            <TextField label="生年月日" type="date" value={birth} onChange={e=>setBirth(e.target.value)} InputLabelProps={{shrink:true}} fullWidth />
+            <TextField label="実績" value={record} onChange={e=>setRecord(e.target.value)} fullWidth />
+            <TextField label="自己紹介" value={bio} onChange={e=>setBio(e.target.value)} multiline rows={4} fullWidth />
 
-            <TextField
-              label="電話番号"
-              value={tel}
-              onChange={e=>setTel(e.target.value)}
-              fullWidth
-            />
+            {/* プラン */}
+            <Typography variant="h6">プラン</Typography>
 
-            <TextField
-              label="生年月日"
-              type="date"
-              value={birth}
-              onChange={e=>setBirth(e.target.value)}
-              InputLabelProps={{shrink:true}}
-              fullWidth
-            />
+            {plans.length === 0 && (
+              <Typography>プランがまだありません</Typography>
+            )}
 
-            <TextField
-              label="実績"
-              value={record}
-              onChange={e=>setRecord(e.target.value)}
-              fullWidth
-            />
-
-            <TextField
-              label="自己紹介"
-              value={bio}
-              onChange={e=>setBio(e.target.value)}
-              multiline
-              rows={4}
-              fullWidth
-            />
-
-            <Typography variant="h6">
-              カテゴリー
-            </Typography>
-
-            <Select
-              multiple
-              value={selectedCategories}
-              onChange={(e)=>setSelectedCategories(e.target.value as number[])}
-              input={<OutlinedInput />}
-              renderValue={(selected)=>(
-                <Box sx={{display:"flex",flexWrap:"wrap",gap:0.5}}>
-                  {(selected as number[]).map(id=>{
-                    const cat = categories.find(c=>c.id===id)
-                    return <Chip key={id} label={cat?.name}/>
-                  })}
-                </Box>
-              )}
-              MenuProps={MenuProps}
-              fullWidth
-            >
-              {categories.map(cat=>(
-                <MenuItem key={cat.id} value={cat.id}>
-                  {cat.name}
-                </MenuItem>
-              ))}
-            </Select>
-
-            <Typography variant="h6">
-              得意分野
-            </Typography>
-
-            <Select
-              multiple
-              value={selectedSpecialities}
-              onChange={(e)=>setSelectedSpecialities(e.target.value as number[])}
-              input={<OutlinedInput />}
-              renderValue={(selected)=>(
-                <Box sx={{display:"flex",flexWrap:"wrap",gap:0.5}}>
-                  {(selected as number[]).map(id=>{
-                    const sp = specialities.find(s=>s.id===id)
-                    return <Chip key={id} label={sp?.name}/>
-                  })}
-                </Box>
-              )}
-              MenuProps={MenuProps}
-              fullWidth
-            >
-              {specialities.map(sp=>(
-                <MenuItem key={sp.id} value={sp.id}>
-                  {sp.name}
-                </MenuItem>
-              ))}
-            </Select>
-
-            <Typography variant="h6">
-              エリア
-            </Typography>
-
-            <Select
-              value={selectedPrefecture ?? ""}
-              onChange={e=>handlePrefectureChange(Number(e.target.value))}
-              fullWidth
-            >
-              {prefectures.map(pref=>(
-                <MenuItem key={pref.id} value={pref.id}>
-                  {pref.name}
-                </MenuItem>
-              ))}
-            </Select>
-
-            <Select
-              value={selectedCity ?? ""}
-              onChange={e=>handleCityChange(Number(e.target.value))}
-              disabled={!selectedPrefecture}
-              fullWidth
-            >
-              {cities.map(city=>(
-                <MenuItem key={city.id} value={city.id}>
-                  {city.name}
-                </MenuItem>
-              ))}
-            </Select>
-
-            <Select
-              multiple
-              value={selectedAreas}
-              onChange={e=>setSelectedAreas(e.target.value as number[])}
-              disabled={!selectedCity}
-              input={<OutlinedInput />}
-              renderValue={(selected)=>(
-                <Box sx={{display:"flex",flexWrap:"wrap",gap:0.5}}>
-                  {(selected as number[]).map(id=>{
-                    const area = areas.find(a=>a.id===id)
-                    return <Chip key={id} label={area?.name}/>
-                  })}
-                </Box>
-              )}
-              MenuProps={MenuProps}
-              fullWidth
-            >
-              {areas.map(area=>(
-                <MenuItem key={area.id} value={area.id}>
-                  {area.name}
-                </MenuItem>
-              ))}
-            </Select>
-
-            <Typography variant="h6">
-              プラン
-            </Typography>
-
-            {plans.map((plan:Plan)=>(
-              <Card key={plan.id} sx={{p:2}}>
+            {plans.map((plan)=>(
+              <Card key={plan.id} sx={{p:2,mb:2}}>
 
                 <Typography fontWeight="bold">
                   {plan.name}
@@ -492,18 +300,44 @@ export default function TrainerProfileEditPage() {
                 )}
 
                 {plan.description && (
-                  <Typography>
+                  <Typography sx={{mt:1}}>
                     {plan.description}
                   </Typography>
                 )}
 
+                <Box sx={{display:"flex",gap:1,mt:2}}>
+
+                  <Button
+                    size="small"
+                    variant="outlined"
+                    onClick={()=>router.push(`/trainer/plan/${plan.id}/edit`)}
+                  >
+                    編集
+                  </Button>
+
+                  <Button
+                    size="small"
+                    color="error"
+                    variant="outlined"
+                    onClick={()=>handleDeletePlan(plan.id)}
+                  >
+                    削除
+                  </Button>
+
+                </Box>
+
               </Card>
             ))}
-            <input type="file" onChange={handleImageChange}/>
 
-            {imagePreview && (
-              <img src={imagePreview} width={120}/>
-            )}
+            <Button
+              variant="outlined"
+              onClick={()=>router.push("/trainer/plan/create")}
+            >
+              プラン追加
+            </Button>
+
+            <input type="file" onChange={handleImageChange}/>
+            {imagePreview && <img src={imagePreview} width={120}/>}
 
             <Button type="submit" variant="contained">
               更新
@@ -512,7 +346,6 @@ export default function TrainerProfileEditPage() {
           </Stack>
 
         </CardContent>
-
       </Card>
 
     </Box>

@@ -26,23 +26,53 @@ export default function PlanEditPage(){
   const [description,setDescription] = useState("")
   const [planType,setPlanType] = useState("single")
   const [sessionCount,setSessionCount] = useState<number | null>(null)
+  const [loading,setLoading] = useState(true)
 
+  // 🔑 トークン取得
+  const getToken = () => {
+    const token = localStorage.getItem("token")
+    if (!token) {
+      router.push("/login")
+      throw new Error("No token")
+    }
+    return token
+  }
+
+  // =============================
+  // プラン取得
+  // =============================
   useEffect(()=>{
 
     const fetchPlan = async ()=>{
 
-      const res = await fetch(`${API_URL}/api/plans/${planId}`,{
-        credentials:"include"
-      })
+      try {
 
-      const data = await res.json()
+        const token = getToken()
 
-      setName(data.name)
-      setPrice(data.price)
-      setDuration(data.duration_minutes)
-      setDescription(data.description ?? "")
-      setPlanType(data.plan_type)
-      setSessionCount(data.session_count)
+        const res = await fetch(`${API_URL}/api/plans/${planId}`,{
+          headers:{
+            Authorization:`Bearer ${token}`,
+            Accept:"application/json"
+          }
+        })
+
+        if(!res.ok) throw new Error("取得失敗")
+
+        const data = await res.json()
+
+        setName(data.name)
+        setPrice(data.price)
+        setDuration(data.duration_minutes)
+        setDescription(data.description ?? "")
+        setPlanType(data.plan_type)
+        setSessionCount(data.session_count)
+
+      } catch(err){
+        console.error(err)
+        alert("プラン取得に失敗しました")
+      } finally {
+        setLoading(false)
+      }
 
     }
 
@@ -50,27 +80,22 @@ export default function PlanEditPage(){
 
   },[planId])
 
+  // =============================
+  // 更新
+  // =============================
   const handleSubmit = async(e:React.FormEvent)=>{
     e.preventDefault()
 
-    await fetch(`${API_URL}/sanctum/csrf-cookie`,{
-      credentials:"include"
-    })
+    try {
 
-    const xsrfToken = decodeURIComponent(
-      document.cookie.split("; ")
-      .find(row=>row.startsWith("XSRF-TOKEN="))
-      ?.split("=")[1] ?? ""
-    )
+      const token = getToken()
 
-    const res = await fetch(
-      `${API_URL}/api/plans/${planId}`,
-      {
+      const res = await fetch(`${API_URL}/api/plans/${planId}`,{
         method:"PATCH",
-        credentials:"include",
         headers:{
+          Authorization:`Bearer ${token}`,
           "Content-Type":"application/json",
-          "X-XSRF-TOKEN":xsrfToken
+          Accept:"application/json"
         },
         body:JSON.stringify({
           name,
@@ -78,16 +103,26 @@ export default function PlanEditPage(){
           description,
           plan_type:planType,
           duration_minutes:duration,
-          session_count:sessionCount
+          session_count: planType === "ticket" ? sessionCount : null
         })
+      })
+
+      if(!res.ok){
+        throw new Error("更新失敗")
       }
-    )
 
-    if(res.ok){
       router.push("/trainer/profile")
-    }
 
+    } catch(err){
+      console.error(err)
+      alert("プラン更新に失敗しました")
+    }
   }
+
+  // =============================
+  // UI
+  // =============================
+  if(loading) return <Typography p={4}>Loading...</Typography>
 
   return(
 
@@ -103,6 +138,7 @@ export default function PlanEditPage(){
           label="プラン名"
           value={name}
           onChange={e=>setName(e.target.value)}
+          required
         />
 
         <TextField
@@ -110,6 +146,7 @@ export default function PlanEditPage(){
           type="number"
           value={price}
           onChange={e=>setPrice(Number(e.target.value))}
+          required
         />
 
         <TextField
@@ -117,6 +154,7 @@ export default function PlanEditPage(){
           type="number"
           value={duration}
           onChange={e=>setDuration(Number(e.target.value))}
+          required
         />
 
         <Select
@@ -128,12 +166,14 @@ export default function PlanEditPage(){
           <MenuItem value="monthly">月額</MenuItem>
         </Select>
 
-        <TextField
-          label="回数（回数券のみ）"
-          type="number"
-          value={sessionCount ?? ""}
-          onChange={e=>setSessionCount(Number(e.target.value))}
-        />
+        {planType === "ticket" && (
+          <TextField
+            label="回数"
+            type="number"
+            value={sessionCount ?? ""}
+            onChange={e=>setSessionCount(Number(e.target.value))}
+          />
+        )}
 
         <TextField
           label="説明"

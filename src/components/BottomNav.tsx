@@ -9,28 +9,40 @@ import {
 import HomeIcon from "@mui/icons-material/Home";
 import SearchIcon from "@mui/icons-material/Search";
 import EventIcon from "@mui/icons-material/Event";
-import MonitorWeightIcon from "@mui/icons-material/MonitorWeight";
 import PersonIcon from "@mui/icons-material/Person";
 
 import { useRouter, usePathname } from "next/navigation";
 import { useState, useEffect } from "react";
+import { useAuth } from "@/context/AuthContext";
 
 export default function BottomNav() {
 
   const router = useRouter();
   const pathname = usePathname();
+  const { user } = useAuth();
 
   const [value,setValue] = useState(0);
 
+  const isTrainer = !!user?.trainer?.id;
+
+  // =============================
+  // 現在位置判定
+  // =============================
   useEffect(() => {
 
     if(pathname.startsWith("/home")) setValue(0);
     else if(pathname.startsWith("/trainers")) setValue(1);
     else if(pathname.startsWith("/reservations")) setValue(2);
-    else if(pathname.startsWith("/weight")) setValue(3);
-    else if(pathname.startsWith("/trainer")) setValue(4);
+    else if(pathname.startsWith("/trainer") || pathname.startsWith("/profile")) setValue(3);
 
   },[pathname]);
+
+  // =============================
+  // プロフィール遷移先
+  // =============================
+  const goProfile = () => {
+      router.push("/profile");
+  };
 
   return (
 
@@ -68,15 +80,9 @@ export default function BottomNav() {
         />
 
         <BottomNavigationAction
-          label="体重"
-          icon={<MonitorWeightIcon />}
-          onClick={()=>router.push("/weight")}
-        />
-
-        <BottomNavigationAction
           label="Profile"
           icon={<PersonIcon />}
-          onClick={()=>router.push("/trainer/profile")}
+          onClick={goProfile}
         />
 
       </BottomNavigation>

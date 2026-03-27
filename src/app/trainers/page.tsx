@@ -8,10 +8,13 @@ import { calculateMatchScore } from "@/components/MatchingLogic"
 import SearchForm from "@/components/SearchForm"
 import TrainerList from "@/components/TrainerList"
 import { Box, Typography } from "@mui/material"
+import { useRouter } from "next/navigation"
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL
 
 export default function Page() {
+
+  const router = useRouter()
 
   // ----------------------
   // state
@@ -34,7 +37,31 @@ export default function Page() {
   const [userType, setUserType] = useState<string | null>(null)
 
   // ----------------------
-  // 都道府県取得
+  // 🔑 共通fetch（トークン）
+  // ----------------------
+
+  const fetchWithAuth = async (url: string) => {
+    const token = localStorage.getItem("token")
+
+    if (!token) {
+      router.push("/login")
+      throw new Error("No token")
+    }
+
+    const res = await fetch(url, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+    })
+
+    if (!res.ok) throw new Error("API error")
+
+    return res.json()
+  }
+
+  // ----------------------
+  // 都道府県取得（公開API）
   // ----------------------
 
   useEffect(() => {
@@ -96,18 +123,26 @@ export default function Page() {
   }, [])
 
   // ----------------------
-  // ユーザータイプ取得
+  // 🔥 ユーザータイプ取得（修正ポイント）
   // ----------------------
 
   useEffect(() => {
-    fetch(`${API_URL}/api/user`, {
-      credentials: "include"
-    })
-      .then(res => res.json())
-      .then(data => setUserType(data.user_type))
+    const fetchUser = async () => {
+      try {
+        const data = await fetchWithAuth(`${API_URL}/api/user`)
+        setUserType(data.user_type)
+      } catch (err) {
+        console.error(err)
+      }
+    }
+
+    fetchUser()
   }, [])
 
-  // 初期表示でおすすめ表示
+  // ----------------------
+  // 初期おすすめ表示
+  // ----------------------
+
   useEffect(() => {
     if (userType) {
       handleSearch()
@@ -139,8 +174,9 @@ export default function Page() {
         const scoreB = calculateMatchScore(userType, b)
         return scoreB - scoreA
       })
-    }    
-    setTrainers(data.data)
+    }
+
+    setTrainers(result) // ←ここも修正
   }
 
   // ----------------------

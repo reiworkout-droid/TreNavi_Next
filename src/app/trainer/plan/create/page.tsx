@@ -25,38 +25,38 @@ export default function PlanCreatePage(){
   const [planType,setPlanType] = useState("single")
   const [sessionCount,setSessionCount] = useState<number | null>(null)
 
-  const trainerId = 1 // 本来はログインユーザーのtrainerID
+  // 🔑 トークン取得
+  const getToken = () => {
+    const token = localStorage.getItem("token")
+    if (!token) {
+      router.push("/login")
+      throw new Error("No token")
+    }
+    return token
+  }
 
   const handleSubmit = async(e:React.FormEvent)=>{
     e.preventDefault()
 
-    console.log("CREATE PLAN",{
-      name,
-      price,
-      duration,
-      description,
-      planType,
-      sessionCount
-    })
+    try {
 
-    await fetch(`${API_URL}/sanctum/csrf-cookie`,{
-      credentials:"include"
-    })
+      const token = getToken()
 
-    const xsrfToken = decodeURIComponent(
-      document.cookie.split("; ")
-      .find(row=>row.startsWith("XSRF-TOKEN="))
-      ?.split("=")[1] ?? ""
-    )
+      console.log("CREATE PLAN",{
+        name,
+        price,
+        duration,
+        description,
+        planType,
+        sessionCount
+      })
 
-    const res = await fetch(
-      `${API_URL}/api/plans`,
-      {
+      const res = await fetch(`${API_URL}/api/plans`,{
         method:"POST",
-        credentials:"include",
         headers:{
           "Content-Type":"application/json",
-          "X-XSRF-TOKEN":xsrfToken
+          Authorization:`Bearer ${token}`,
+          Accept:"application/json"
         },
         body:JSON.stringify({
           name,
@@ -64,15 +64,21 @@ export default function PlanCreatePage(){
           description,
           plan_type:planType,
           duration_minutes:duration,
-          session_count:sessionCount
+          session_count:planType === "ticket" ? sessionCount : null // ←地味に重要
         })
+      })
+
+      console.log("CREATE RESULT",res)
+
+      if(!res.ok){
+        throw new Error("作成失敗")
       }
-    )
 
-    console.log("CREATE RESULT",res)
-
-    if(res.ok){
       router.push("/trainer/profile")
+
+    } catch(err){
+      console.error(err)
+      alert("プラン作成に失敗しました")
     }
   }
 
@@ -89,6 +95,7 @@ export default function PlanCreatePage(){
           label="プラン名"
           value={name}
           onChange={e=>setName(e.target.value)}
+          required
         />
 
         <TextField
@@ -96,6 +103,7 @@ export default function PlanCreatePage(){
           type="number"
           value={price}
           onChange={e=>setPrice(Number(e.target.value))}
+          required
         />
 
         <TextField
@@ -103,6 +111,7 @@ export default function PlanCreatePage(){
           type="number"
           value={duration}
           onChange={e=>setDuration(Number(e.target.value))}
+          required
         />
 
         <Select
@@ -114,12 +123,14 @@ export default function PlanCreatePage(){
           <MenuItem value="monthly">月額</MenuItem>
         </Select>
 
-        <TextField
-          label="回数（回数券のみ）"
-          type="number"
-          value={sessionCount ?? ""}
-          onChange={e=>setSessionCount(Number(e.target.value))}
-        />
+        {planType === "ticket" && (
+          <TextField
+            label="回数"
+            type="number"
+            value={sessionCount ?? ""}
+            onChange={e=>setSessionCount(Number(e.target.value))}
+          />
+        )}
 
         <TextField
           label="説明"

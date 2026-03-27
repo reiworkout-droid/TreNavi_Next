@@ -25,11 +25,21 @@ export default function ReviewCreatePage() {
   const [reservationId, setReservationId] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
 
-  // ⭐ URLからID取得（Vercel対応）
+  // ⭐ URLからID取得
   useEffect(() => {
     const params = new URLSearchParams(window.location.search)
     setReservationId(params.get("reservation_id"))
   }, [])
+
+  // 🔑 共通
+  const getToken = () => {
+    const token = localStorage.getItem("token")
+    if (!token) {
+      router.push("/login")
+      throw new Error("No token")
+    }
+    return token
+  }
 
   // ⭐ 投稿処理
   const submitReview = async () => {
@@ -41,27 +51,14 @@ export default function ReviewCreatePage() {
     setLoading(true)
 
     try {
-      // ① CSRF取得
-      await fetch(`${API_URL}/sanctum/csrf-cookie`, {
-        credentials: "include"
-      })
+      const token = getToken()
 
-      // ② トークン取得
-      const xsrfToken = document.cookie
-        .split("; ")
-        .find(row => row.startsWith("XSRF-TOKEN="))
-        ?.split("=")[1]
-
-      if (!xsrfToken) throw new Error("トークン取得失敗")
-
-      // ③ POST
       const res = await fetch(`${API_URL}/api/reviews`, {
         method: "POST",
-        credentials: "include",
         headers: {
           "Content-Type": "application/json",
           "Accept": "application/json",
-          "X-XSRF-TOKEN": decodeURIComponent(xsrfToken)
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
           reservation_id: reservationId,
@@ -74,15 +71,14 @@ export default function ReviewCreatePage() {
       })
 
       if (!res.ok) {
-        alert("投稿失敗")
+        const err = await res.json().catch(() => ({}))
+        alert(err.message || "投稿失敗")
         return
       }
 
       alert("投稿しました！")
 
-      // ⭐ 一覧へ戻る + 再取得
       router.push("/reservation")
-      router.refresh()
 
     } catch (err) {
       console.error(err)
@@ -105,50 +101,11 @@ export default function ReviewCreatePage() {
       </Typography>
 
       <Stack spacing={4}>
-        <ReviewSlider
-          label="指導スタイル"
-          left="優しい"
-          right="厳しい"
-          value={style}
-          onChange={setStyle}
-          marks={marks}
-        />
-
-        <ReviewSlider
-          label="会話量"
-          left="少ない"
-          right="多い"
-          value={talk}
-          onChange={setTalk}
-          marks={marks}
-        />
-
-        <ReviewSlider
-          label="指導方法"
-          left="体感型"
-          right="論理型"
-          value={logic}
-          onChange={setLogic}
-          marks={marks}
-        />
-
-        <ReviewSlider
-          label="ペース"
-          left="ゆっくり"
-          right="テンポ良い"
-          value={pace}
-          onChange={setPace}
-          marks={marks}
-        />
-
-        <ReviewSlider
-          label="距離感"
-          left="フレンドリー"
-          right="プロっぽい"
-          value={distance}
-          onChange={setDistance}
-          marks={marks}
-        />
+        <ReviewSlider label="指導スタイル" left="優しい" right="厳しい" value={style} onChange={setStyle} marks={marks} />
+        <ReviewSlider label="会話量" left="少ない" right="多い" value={talk} onChange={setTalk} marks={marks} />
+        <ReviewSlider label="指導方法" left="体感型" right="論理型" value={logic} onChange={setLogic} marks={marks} />
+        <ReviewSlider label="ペース" left="ゆっくり" right="テンポ良い" value={pace} onChange={setPace} marks={marks} />
+        <ReviewSlider label="距離感" left="フレンドリー" right="プロっぽい" value={distance} onChange={setDistance} marks={marks} />
 
         <Button
           variant="contained"
@@ -162,4 +119,3 @@ export default function ReviewCreatePage() {
     </Box>
   )
 }
-

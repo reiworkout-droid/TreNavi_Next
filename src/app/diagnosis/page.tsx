@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import ReviewSlider from "@/components/ReviewSlider"
-import { useRouter } from "next/navigation";
+import { useRouter } from "next/navigation"
 import {
   Box,
   Typography,
@@ -14,14 +14,16 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL
 
 export default function DiagnosisPage() {
 
-  const router = useRouter();
+  const router = useRouter()
 
   const [style, setStyle] = useState(3)
   const [talk, setTalk] = useState(3)
   const [logic, setLogic] = useState(3)
   const [pace, setPace] = useState(3)
   const [distance, setDistance] = useState(3)
+  const [loading, setLoading] = useState(false)
 
+  // タイプ判定
   const getUserType = () => {
     if (style >= 4 && logic >= 4 && pace >= 4 && distance >= 3) {
       return "ストイック型"
@@ -42,51 +44,45 @@ export default function DiagnosisPage() {
     return "バランス型"
   }
 
-const handleSubmit = async () => {
-  try {
-    // ① CSRF取得
-    await fetch(`${API_URL}/sanctum/csrf-cookie`, {
-      credentials: "include"
-    })
+  const handleSubmit = async () => {
+    setLoading(true)
 
-    // ② トークン取得
-    const xsrfToken = document.cookie
-      .split("; ")
-      .find(row => row.startsWith("XSRF-TOKEN="))
-      ?.split("=")[1]
+    try {
+      const token = localStorage.getItem("token")
 
-    if (!xsrfToken) throw new Error("トークン取得失敗")
+      if (!token) {
+        router.push("/login")
+        return
+      }
 
-    // 👉 タイプ算出
-    const type = getUserType()
+      const type = getUserType()
 
-    // ③ POST
-    const res = await fetch(`${API_URL}/api/diagnosis`, {
-      method: "POST",
-      credentials: "include",
-      headers: {
-        "Content-Type": "application/json",
-        "Accept": "application/json",
-        "X-XSRF-TOKEN": decodeURIComponent(xsrfToken)
-      },
-      body: JSON.stringify({
-        user_type: type
+      const res = await fetch(`${API_URL}/api/diagnosis`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          user_type: type
+        })
       })
-    })
 
-    if (!res.ok) {
-      alert("保存失敗")
-      return
+      if (!res.ok) {
+        alert("保存失敗")
+        return
+      }
+
+      router.push(`/diagnosis/result?type=${type}`)
+
+    } catch (err) {
+      console.error(err)
+      alert("通信エラー")
+    } finally {
+      setLoading(false)
     }
-
-    // ✅ 成功
-    router.push(`/diagnosis/result?type=${type}`)
-
-  } catch (err) {
-    console.error(err)
-    alert("通信エラー")
   }
-}
+
   const marks = [
     { value: 1, label: "1" },
     { value: 3, label: "3" },
@@ -149,11 +145,15 @@ const handleSubmit = async () => {
           marks={marks}
         />
 
-        <Button variant="contained" size="large" onClick={handleSubmit}>
-          診断する
+        <Button
+          variant="contained"
+          size="large"
+          onClick={handleSubmit}
+          disabled={loading}
+        >
+          {loading ? "送信中..." : "診断する"}
         </Button>
       </Stack>
     </Box>
   )
 }
-

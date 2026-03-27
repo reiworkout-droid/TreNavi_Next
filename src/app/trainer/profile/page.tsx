@@ -22,30 +22,47 @@ export default function TrainerProfilePage() {
   const [loading,setLoading] = useState(true)
 
   // =============================
+  // 共通fetch（トークン）
+  // =============================
+  const fetchWithAuth = async (url: string, options: RequestInit = {}) => {
+
+    const token = localStorage.getItem("token")
+
+    if (!token) {
+      router.push("/login")
+      throw new Error("No token")
+    }
+
+    const res = await fetch(url, {
+      ...options,
+      headers: {
+        Authorization: `Bearer ${token}`,
+        Accept: "application/json",
+        "Content-Type": "application/json",
+        ...(options.headers || {})
+      }
+    })
+
+    if (!res.ok) throw new Error("API error")
+
+    return res.json()
+  }
+
+  // =============================
   // トレーナー取得
   // =============================
-  const fetchTrainer = async ()=>{
-
-    try{
-
-      const res = await fetch(`${API_URL}/api/trainers/profile`,{
-        credentials:"include",
-        headers:{
-          Accept:"application/json"
-        }
-      })
-
-      const data = await res.json()
+  const fetchTrainer = async () => {
+    try {
+      const data = await fetchWithAuth(`${API_URL}/api/trainers/profile`)
 
       setTrainer(data)
       setPlans(data.plans ?? [])
 
-    }catch(err){
+    } catch (err) {
       console.error(err)
-    }finally{
+    } finally {
       setLoading(false)
     }
-
   }
 
   useEffect(()=>{
@@ -59,35 +76,19 @@ export default function TrainerProfilePage() {
 
     if(!confirm("このプランを削除しますか？")) return
 
-    await fetch(`${API_URL}/sanctum/csrf-cookie`,{
-      credentials:"include"
-    })
-
-    const xsrfToken = decodeURIComponent(
-      document.cookie
-      .split("; ")
-      .find(row=>row.startsWith("XSRF-TOKEN="))
-      ?.split("=")[1] ?? ""
-    )
-
-    const res = await fetch(
-      `${API_URL}/api/plans/${id}`,
-      {
-        method:"DELETE",
-        credentials:"include",
-        headers:{
-          "X-XSRF-TOKEN":xsrfToken
-        }
-      }
-    )
-
-    if(res.ok){
+    try {
+      await fetchWithAuth(
+        `${API_URL}/api/plans/${id}`,
+        { method:"DELETE" }
+      )
 
       // UI更新
       setPlans(prev => prev.filter(p => p.id !== id))
 
+    } catch (err) {
+      console.error(err)
+      alert("削除に失敗しました")
     }
-
   }
 
   // =============================
@@ -183,8 +184,6 @@ export default function TrainerProfilePage() {
                   {plan.description}
                 </Typography>
               )}
-
-              {/* ボタン */}
 
               <Box sx={{display:"flex",gap:1,mt:2}}>
 
