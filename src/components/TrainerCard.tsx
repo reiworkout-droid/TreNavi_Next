@@ -37,8 +37,21 @@ console.log(
   trainer.talk_avg
 )
   return (
-    <Card>
+    // MUI: Card に角丸・影・ホバーエフェクト追加
+    <Card
+      sx={{
+        borderRadius: 3,
+        boxShadow: "0 2px 12px rgba(0,0,0,0.08)",
+        transition: "transform 0.2s ease, box-shadow 0.2s ease",
+        "&:hover": {
+          transform: "translateY(-4px)",
+          boxShadow: "0 8px 24px rgba(0,0,0,0.12)",
+        },
+        overflow: "hidden",
+      }}
+    >
 
+      {/* MUI: 画像の高さを拡大 */}
       <Box
         component="img"
         src={
@@ -46,58 +59,106 @@ console.log(
             ? `${API_URL}/storage/${trainer.profile_image}`
             : "/noimage.png"
         }
-        sx={{ width: "100%", height: 220, objectFit: "cover" }}
+        sx={{ width: "100%", height: 240, objectFit: "cover" }}
       />
 
-      <CardContent>
+      {/* MUI: CardContent に余白を増やして読みやすく */}
+      <CardContent sx={{ px: 2.5, py: 2.5 }}>
 
+        {/* MUI: おすすめバッジ風スタイル */}
         {score !== null && score >= 3.5 && (
-        <Typography color="primary" fontWeight="bold">
+          <Typography
+            fontWeight="bold"
+            sx={{
+              fontSize: "0.8rem",
+              bgcolor: "primary.main",
+              color: "primary.contrastText",
+              display: "inline-block",
+              px: 1.5,
+              py: 0.3,
+              borderRadius: 2,
+              mb: 1,
+            }}
+          >
             ⭐ あなたにおすすめ
-        </Typography>
+          </Typography>
         )}
 
+        {/* MUI: 名前を目立たせる + ホバー装飾 / Tailwind: 下余白 */}
         <Typography
           variant="h6"
           onClick={() => router.push(`/trainers/${trainer.id}`)}
-          sx={{ cursor: "pointer" }}
+          sx={{
+            cursor: "pointer",
+            fontWeight: 700,
+            fontSize: "1.1rem",
+            color: "text.primary",
+            "&:hover": { color: "primary.main", textDecoration: "underline" },
+          }}
+          className="mb-1"
         >
           {trainer.user.name}
         </Typography>
 
-        <Typography>
+        {/* MUI: エリア情報を控えめに / Tailwind: 余白調整 */}
+        <Typography
+          sx={{ fontSize: "0.85rem", color: "text.secondary" }}
+          className="mb-0.5"
+        >
           {trainer.areas.map(a => a.name).join(" / ")}
         </Typography>
 
-        <Typography>
+        {/* MUI: カテゴリを小さめに */}
+        <Typography
+          sx={{ fontSize: "0.85rem", color: "text.secondary" }}
+          className="mb-0.5"
+        >
           {trainer.categories.map(c => c.name).join(", ")}
         </Typography>
 
-        <Typography>
+        {/* MUI: 得意分野を少し強調 / Tailwind: 下余白 */}
+        <Typography
+          sx={{ fontSize: "0.85rem", color: "text.secondary", fontWeight: 500 }}
+          className="mb-2"
+        >
           得意: {trainer.specialities.map(s => s.name).join(", ")}
         </Typography>
 
+        {/* MUI: スコアの色分け・フォントサイズ調整 */}
         {score !== null && (
-        <Typography sx={{ 
-            mt: 1, 
+          <Typography sx={{
+            mt: 1,
             fontWeight: "bold",
-                    color:
-            score && score >= 3.5
-                ? "gold"
-                : score && score >= 4
+            fontSize: "0.9rem",
+            color:
+              score >= 4
                 ? "orange"
-                : "gray"    
-        }}>
+                : score >= 3.5
+                ? "gold"
+                : "gray"
+          }}>
             相性スコア: {renderStars(score)} {score} / 5
-        </Typography>
+          </Typography>
         )}
 
-        <Typography sx={{ mt: 1 }}>
+        {/* MUI: 料金を太字で強調 / Tailwind: 上下余白 */}
+        <Typography
+          sx={{
+            mt: 1.5,
+            fontWeight: 700,
+            fontSize: "1.05rem",
+            color: "text.primary",
+          }}
+          className="mb-3"
+        >
           最安料金 {trainer.plans_min_price ?? "未設定"}円
         </Typography>
 
-        <TrainerLikeButton trainerId={trainer.id} />
-        
+        {/* Tailwind: いいねボタン周りの余白確保 */}
+        <Box className="pt-2">
+          <TrainerLikeButton trainerId={trainer.id} />
+        </Box>
+
       </CardContent>
     </Card>
   )

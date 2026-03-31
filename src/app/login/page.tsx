@@ -121,14 +121,27 @@ export default function LoginPage() {
         <CardContent className="flex flex-col gap-6 !pt-12 !pb-8 !px-8">
           <Typography variant="h4" className="text-center font-bold">TreNavi Login</Typography>
 
-          <div className="flex width mb-6">
+          <div className="flex bg-gray-100 rounded-full p-1 mb-6">
             <button
               onClick={() => setIsLogin(true)}
-              className={isLogin ? "border-b-2 border-blue-500" : "text-gray-400"}
+              className={`flex-1 py-2 rounded-full text-sm font-semibold transition ${
+                isLogin
+                  ? "bg-white text-[#5a9e7c] shadow"
+                  : "text-gray-400"
+              }`}
             >
               ログイン
             </button>
-            <button onClick={() => setIsLogin(false)}>新規登録</button>
+            <button
+              onClick={() => setIsLogin(false)}
+              className={`flex-1 py-2 rounded-full text-sm font-semibold transition ${
+                !isLogin
+                  ? "bg-white text-[#5a9e7c] shadow"
+                  : "text-gray-400"
+              }`}    
+            >
+              新規登録
+            </button>
           </div>
 
           <form onSubmit={handleAuth}>

@@ -6,7 +6,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import { Toolbar } from "@mui/material";
 import { AppRouterCacheProvider } from "@mui/material-nextjs/v15-appRouter";
 
-import { AuthProvider } from "@/context/AuthContext"
+import Providers from "@/providers/Providers";
 // ヘッダーコンポーネントのインポート
 import Header from "@/components/Header";
 import BottomNav from "@/components/BottomNav"
@@ -44,21 +44,19 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <AppRouterCacheProvider>
-          <AuthProvider>
-            {/* ヘッダー */}
-            <Header />
+          <Providers>
+              {/* ヘッダー */}
+              <Header />
 
-            <Header />
 
-            <Toolbar />
+              <Toolbar />
 
-            <main style={{ marginTop: "64px", marginBottom: "80px" }}>
-              {children}
-            </main>
+              <main style={{ marginTop: "64px", marginBottom: "80px" }}>
+                {children}
+              </main>
 
-            <BottomNav />
-            
-          </AuthProvider>
+              <BottomNav />    
+          </Providers>
         </AppRouterCacheProvider>
       </body>
     </html>
