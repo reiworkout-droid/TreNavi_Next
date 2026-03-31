@@ -183,17 +183,17 @@ export default function TrainerDetailPage() {
                 {trainer.plans.map((plan) => (
                   <Grid size={{ xs: 12, sm: 6 }} key={plan.id}>
                       <Card
-                  sx={{
-                    borderRadius: 3,
-                    border: "1px solid",
-                    borderColor: "grey.200",
-                    boxShadow: "0 1px 6px rgba(0,0,0,0.04)",
-                    transition: "box-shadow 0.2s ease",
-                    "&:hover": {
-                      boxShadow: "0 4px 16px rgba(0,0,0,0.10)",
-                    },
-                  }}
-                >
+                        sx={{
+                          borderRadius: 3,
+                          border: "1px solid",
+                          borderColor: "grey.200",
+                          boxShadow: "0 1px 6px rgba(0,0,0,0.04)",
+                          transition: "box-shadow 0.2s ease",
+                          "&:hover": {
+                            boxShadow: "0 4px 16px rgba(0,0,0,0.10)",
+                          },
+                        }}
+                      >
                   <CardContent sx={{ px: 2.5, py: 2 }}>
                     <Typography
                       sx={{ fontWeight: 700, fontSize: "1rem", color: "text.primary" }}

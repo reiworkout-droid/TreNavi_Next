@@ -147,6 +147,7 @@ export default function DiagnosisPage() {
 
         <Button
           variant="contained"
+          color="secondary"
           size="large"
           onClick={handleSubmit}
           disabled={loading}

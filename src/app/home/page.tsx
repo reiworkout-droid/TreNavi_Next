@@ -122,10 +122,10 @@ export default function HomePage() {
           {/* MUI sx: メインCTAをコーラルオレンジで最も目立たせる */}
           <Button
             variant="contained"
+            color="secondary"
             sx={{
               mt: 2,
               borderRadius: "999px",
-              backgroundColor: "#e8734a",
               color: "#fff",
               fontWeight: 700,
               fontSize: "0.9rem",

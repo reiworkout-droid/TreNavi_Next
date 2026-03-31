@@ -110,6 +110,7 @@ export default function ReviewCreatePage() {
         <Button
           variant="contained"
           size="large"
+          color="secondary"
           onClick={submitReview}
           disabled={loading}
         >
