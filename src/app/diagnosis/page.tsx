@@ -96,7 +96,7 @@ export default function DiagnosisPage() {
       </Typography>
 
       <Typography variant="h6" mb={3}>
-        以下を回答してトレーニータイプを把握しよう
+        理想のトレーナータイプを診断しよう
       </Typography>
 
       <Stack spacing={4}>

@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Card, CardContent, TextField, Button, Typography, IconButton, InputAdornment } from "@mui/material";
+import { useAuth } from "@/context/AuthContext";
 import Visibility from "@mui/icons-material/Visibility";
 import VisibilityOff from "@mui/icons-material/VisibilityOff";
 
@@ -19,6 +20,7 @@ export default function LoginPage() {
   const [redirect, setRedirect] = useState<string | null>(null);
 
   const API_URL = process.env.NEXT_PUBLIC_API_URL;
+  const { refreshUser } = useAuth();
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search).get("redirect");
@@ -64,6 +66,8 @@ export default function LoginPage() {
       // ユーザー情報取得
       await fetchUser(data.access_token);
 
+      await refreshUser();
+
       // リダイレクト
       if (redirect) router.push(redirect);
       else router.push("/home");
@@ -96,6 +100,8 @@ export default function LoginPage() {
 
       // ユーザー情報取得
       await fetchUser(data.access_token);
+
+      await refreshUser();
 
       router.push("/home");
     } catch (err) {
