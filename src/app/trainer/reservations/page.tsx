@@ -4,8 +4,7 @@ import { useEffect, useState } from "react"
 import { Box, Typography, Button, Stack, Card, CardContent } from "@mui/material"
 import { TrainerReservation } from "@/types"
 import { useRouter } from "next/navigation"
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL
+import { apiFetch } from "@/lib/api"
 
 export default function TrainerReservationsPage() {
   const [reservations, setReservations] = useState<TrainerReservation[]>([])
@@ -13,35 +12,14 @@ export default function TrainerReservationsPage() {
 
   const router = useRouter()
 
-  // 🔑 トークン取得
-  const getToken = () => {
-    const token = localStorage.getItem("token")
-    if (!token) {
-      router.push("/login")
-      throw new Error("No token")
-    }
-    return token
-  }
-
   // =============================
   // 予約一覧取得
   // =============================
   const fetchReservations = async () => {
     try {
-      const token = getToken()
-
-      const res = await fetch(`${API_URL}/api/trainer/reservations`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          Accept: "application/json"
-        }
-      })
-
-      if (!res.ok) throw new Error("予約一覧取得失敗")
-
+      const res = await apiFetch("/api/trainer/reservations")
       const data = await res.json()
       setReservations(data)
-
     } catch (err) {
       console.error(err)
       alert("予約一覧の取得に失敗しました")
@@ -62,19 +40,10 @@ export default function TrainerReservationsPage() {
     status: "confirmed" | "canceled"
   ) => {
     try {
-      const token = getToken()
-
-      const res = await fetch(`${API_URL}/api/reservations/${reservationId}`, {
+      const res = await apiFetch(`/api/reservations/${reservationId}`, {
         method: "PATCH",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-          Accept: "application/json"
-        },
         body: JSON.stringify({ status })
       })
-
-      if (!res.ok) throw new Error("更新失敗")
 
       const updated = await res.json()
 

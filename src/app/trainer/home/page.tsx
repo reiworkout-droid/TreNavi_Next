@@ -59,6 +59,7 @@ export default function TrainerHomePage() {
       <Stack spacing={2} className="gap-3">
         {menuItems.map((item) => (
             <Button
+              key={item.path}
               variant="outlined"
               size="large"
               onClick={() => router.push(item.path)}
