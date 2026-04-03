@@ -17,6 +17,8 @@ import { useAuth } from "@/context/AuthContext";
 export default function Header() {
   const router = useRouter();
   const pathname = usePathname();
+  const isTrainerPage = pathname.startsWith("/trainer");
+  const isTrainerHome = pathname.startsWith("/trainer/home");
   const { user, logout, refreshUser } = useAuth();
 
   const isTrainer = !!user?.trainer?.id;
@@ -34,9 +36,8 @@ export default function Header() {
   return (
     <AppBar
       position="fixed"
-      elevation={0} /* MUI: フラットにして柔らかい印象に */
+      elevation={0}
       sx={{
-        /* MUI sx: 安心感のあるセージグリーン背景 + 下線で軽やかに */
         backgroundColor: "#5a9e7c",
         borderBottom: "1px solid rgba(255,255,255,0.15)",
       }}
@@ -45,12 +46,11 @@ export default function Header() {
         sx={{
           display: "flex",
           justifyContent: "space-between",
-          /* MUI sx: 左右の余白を増やして読みやすく */
           px: { xs: 2, sm: 3 },
           minHeight: { xs: 56 },
         }}
       >
-        {/* ロゴ — MUI sx: フォントサイズ・letter-spacingで洗練された印象に */}
+        {/* ロゴ */}
         <Typography
           variant="h6"
           sx={{
@@ -65,9 +65,9 @@ export default function Header() {
           TreNavi
         </Typography>
 
-        {/* 右側 — MUI sx: gap を広げてボタン同士の窮屈さを解消 */}
+        {/* 右側 */}
         <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
-          {/* 通知アイコン — MUI sx: ホバー時に柔らかいハイライト */}
+          
           <IconButton
             color="inherit"
             sx={{
@@ -78,7 +78,7 @@ export default function Header() {
             <NotificationsIcon sx={{ fontSize: 22 }} />
           </IconButton>
 
-          {/* トレーナー登録 — MUI sx: 白枠ボタンでCTAとして目立たせる */}
+          {/* トレーナー登録 */}
           {user && !isTrainer && (
             <Button
               color="inherit"
@@ -100,46 +100,45 @@ export default function Header() {
             </Button>
           )}
 
-          {/* トレーナー切替 */}
-          {isTrainer && (
-            <>
-              <Button
-                color="inherit"
-                size="small"
-                startIcon={<HomeIcon sx={{ fontSize: 18 }} />}
-                onClick={() => router.push("/trainer/home")}
-                sx={{
-                  borderRadius: "999px",
-                  px: 1.5,
-                  fontSize: "0.75rem",
-                  fontWeight: 600,
-                  "&:hover": { backgroundColor: "rgba(255,255,255,0.15)" },
-                }}
-              >
-                Trainer
-              </Button>
-
-              {pathname?.startsWith("/trainer/home") && (
-                <Button
-                  color="inherit"
-                  size="small"
-                  startIcon={<PeopleIcon sx={{ fontSize: 18 }} />}
-                  onClick={() => router.push("/home")}
-                  sx={{
-                    borderRadius: "999px",
-                    px: 1.5,
-                    fontSize: "0.75rem",
-                    fontWeight: 600,
-                    "&:hover": { backgroundColor: "rgba(255,255,255,0.15)" },
-                  }}
-                >
-                  Client
-                </Button>
-              )}
-            </>
+          {/* トレーナー切替（ホーム以外） */}
+          {isTrainer && !isTrainerHome && (
+            <Button
+              color="inherit"
+              size="small"
+              startIcon={<HomeIcon sx={{ fontSize: 18 }} />}
+              onClick={() => router.push("/trainer/home")}
+              sx={{
+                borderRadius: "999px",
+                px: 1.5,
+                fontSize: "0.75rem",
+                fontWeight: 600,
+                "&:hover": { backgroundColor: "rgba(255,255,255,0.15)" },
+              }}
+            >
+              Trainer
+            </Button>
           )}
 
-          {/* ログイン/ログアウト — MUI sx: ログインは白背景で最も目立つCTAに */}
+          {/* トレーナーホーム時のみ Client */}
+          {isTrainer && isTrainerHome && (
+            <Button
+              color="inherit"
+              size="small"
+              startIcon={<PeopleIcon sx={{ fontSize: 18 }} />}
+              onClick={() => router.push("/home")}
+              sx={{
+                borderRadius: "999px",
+                px: 1.5,
+                fontSize: "0.75rem",
+                fontWeight: 600,
+                "&:hover": { backgroundColor: "rgba(255,255,255,0.15)" },
+              }}
+            >
+              Client
+            </Button>
+          )}
+
+          {/* ログイン/ログアウト */}
           {user ? (
             <Button
               color="inherit"
@@ -164,7 +163,6 @@ export default function Header() {
               size="small"
               onClick={() => router.push("/login")}
               sx={{
-                /* MUI sx: 白背景+グリーン文字で最重要CTAを強調 */
                 borderRadius: "999px",
                 backgroundColor: "#fff",
                 color: "#5a9e7c",
