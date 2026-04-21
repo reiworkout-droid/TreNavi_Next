@@ -8,8 +8,8 @@ import { AppRouterCacheProvider } from "@mui/material-nextjs/v15-appRouter";
 
 import Providers from "@/providers/Providers";
 // ヘッダーコンポーネントのインポート
-import Header from "@/components/Header";
-import BottomNav from "@/components/BottomNav"
+import Header from "@/components/layout/Header";
+import BottomNav from "@/components/layout/BottomNav"
 import "./globals.css";
 
 // フォントの設定

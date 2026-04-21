@@ -1,7 +1,7 @@
 "use client"
 
 import { TrainerSearch } from "@/types"
-import { calculateMatchScore } from "./MatchingLogic"
+import { calculateMatchScore } from "../logic/MatchingLogic"
 import {
   Card,
   CardContent,

@@ -12,7 +12,7 @@ import {
   Button
 } from "@mui/material";
 import { useRouter } from "next/navigation";
-import TrainerLikeButton from "@/components/TrainerLikeButton";
+import TrainerLikeButton from "@/components/trainer/TrainerLikeButton";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
