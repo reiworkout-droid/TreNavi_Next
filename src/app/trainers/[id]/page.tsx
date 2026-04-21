@@ -150,26 +150,61 @@ export default function TrainerDetailPage() {
                 sx={{ fontWeight: 700, fontSize: "1rem", color: "text.primary" }}
                 className="mb-2"
               >
-                口コミ平均
+                口コミ評価
               </Typography>
-              <Typography sx={{ fontSize: "0.88rem", color: "text.secondary" }} className="mb-0.5">
-                指導スタイル: {summary.style ?? "-"}
-              </Typography>
-              <Typography sx={{ fontSize: "0.88rem", color: "text.secondary" }} className="mb-0.5">
-                会話量: {summary.talk ?? "-"}
-              </Typography>
-              <Typography sx={{ fontSize: "0.88rem", color: "text.secondary" }} className="mb-0.5">
-                論理性: {summary.logic ?? "-"}
-              </Typography>
-              <Typography sx={{ fontSize: "0.88rem", color: "text.secondary" }} className="mb-0.5">
-                ペース: {summary.pace ?? "-"}
-              </Typography>
-              <Typography sx={{ fontSize: "0.88rem", color: "text.secondary" }}>
-                距離感: {summary.distance ?? "-"}
-              </Typography>
+
+              {/* ⭐表示関数 */}
+              {(() => {
+                const renderStars = (value: number | null) => {
+                  if (!value) return "ー";
+                  const rounded = Math.round(value);
+                  return "★".repeat(rounded) + "☆".repeat(5 - rounded);
+                };
+
+                const items = [
+                  { label: "指導スタイル", value: summary.style },
+                  { label: "会話の多さ", value: summary.talk },
+                  { label: "指導の論理性", value: summary.logic },
+                  { label: "トレーニングペース", value: summary.pace },
+                  { label: "距離感", value: summary.distance },
+                ];
+
+                return (
+                  <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
+                    {items.map((item) => (
+                      <Box
+                        key={item.label}
+                        sx={{
+                          display: "flex",
+                          justifyContent: "space-between",
+                          alignItems: "center",
+                        }}
+                      >
+                        <Typography
+                          sx={{ fontSize: "0.85rem", color: "text.secondary" }}
+                        >
+                          {item.label}
+                        </Typography>
+
+                        <Typography
+                          sx={{
+                            fontSize: "0.9rem",
+                            fontWeight: 600,
+                            color: "#f59e0b", // ゴールドっぽい色
+                          }}
+                        >
+                          {renderStars(item.value)}{" "}
+                          <span style={{ color: "#666", fontWeight: 400 }}>
+                            {item.value ?? "-"}
+                          </span>
+                        </Typography>
+                      </Box>
+                    ))}
+                  </Box>
+                );
+              })()}
             </Box>
           )}
-
           {/* プラン一覧 */}
           <Typography
             variant="h6"
