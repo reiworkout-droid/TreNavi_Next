@@ -1,5 +1,5 @@
 "use client"
-import AreaSelector from "@/components/AreaSelector";
+import AreaSelector from "@/components/ui/AreaSelector";
 import { Box, Button, Card, CardContent, Chip, MenuItem, OutlinedInput, Select, TextField, Typography } from "@mui/material";
 import { useRouter } from "next/navigation";
 import { useState } from "react";

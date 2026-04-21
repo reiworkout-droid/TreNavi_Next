@@ -10,7 +10,7 @@ import {
   CardContent,
   Stack
 } from "@mui/material";
-import TrainerLikeButton from "@/components/TrainerLikeButton";
+import TrainerLikeButton from "@/components/trainer/TrainerLikeButton";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 

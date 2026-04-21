@@ -4,9 +4,9 @@ import { useEffect, useState } from "react"
 import {
   Prefecture, City, Area, Category, Speciality, TrainerSearch
 } from "@/types"
-import { calculateMatchScore } from "@/components/MatchingLogic"
-import SearchForm from "@/components/SearchForm"
-import TrainerList from "@/components/TrainerList"
+import { calculateMatchScore } from "@/components/logic/MatchingLogic"
+import SearchForm from "@/components/form/SearchForm"
+import TrainerList from "@/components/trainer/TrainerList"
 import { Box, Typography } from "@mui/material"
 import { useRouter } from "next/navigation"
 

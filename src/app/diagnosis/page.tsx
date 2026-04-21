@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import ReviewSlider from "@/components/ReviewSlider"
+import ReviewSlider from "@/components/ui/ReviewSlider"
 import { useRouter } from "next/navigation"
 import {
   Box,

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
-import ReviewSlider from "@/components/ReviewSlider"
+import ReviewSlider from "@/components/ui/ReviewSlider"
 import {
   Box,
   Typography,
