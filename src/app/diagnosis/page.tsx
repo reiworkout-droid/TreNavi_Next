@@ -60,7 +60,7 @@ export default function DiagnosisPage() {
       // サーバー側で判定されたタイプを受け取る
       const json = await res.json()
       const type = json.user_type || json.data?.user_type
-      
+
     if (type) {
       // クエリパラメータとしてタイプを渡して遷移
       router.push(`/diagnosis/result?type=${encodeURIComponent(type)}`)
@@ -112,7 +112,7 @@ export default function DiagnosisPage() {
         <ReviewSlider
           label="理想の指導方法は？"
           left="感覚的"
-          right="論理的"
+          right="科学的"
           value={logic}
           onChange={setLogic}
           marks={marks}
