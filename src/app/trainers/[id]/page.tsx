@@ -170,6 +170,7 @@ export default function TrainerDetailPage() {
                 ];
 
                 return (
+                  <>
                   <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
                     {items.map((item) => (
                       <Box
@@ -201,6 +202,29 @@ export default function TrainerDetailPage() {
                       </Box>
                     ))}
                   </Box>
+
+                  {/* 🔥 追加：口コミ一覧への遷移ボタン */}
+                    <Button
+                      fullWidth
+                      variant="outlined"
+                      sx={{
+                        mt: 2,
+                        borderRadius: 2,
+                        textTransform: "none",
+                        fontSize: "0.85rem",
+                        fontWeight: 600,
+                        borderColor: "grey.300",
+                        color: "text.primary",
+                        "&:hover": {
+                          borderColor: "primary.main",
+                          bgcolor: "rgba(25, 118, 210, 0.04)",
+                        },
+                      }}
+                      onClick={() => router.push(`/trainers/${trainer.id}/reviews`)}
+                    >
+                      すべての口コミを見る
+                    </Button>
+                  </>
                 );
               })()}
             </Box>
