@@ -23,26 +23,7 @@ export default function DiagnosisPage() {
   const [distance, setDistance] = useState(3)
   const [loading, setLoading] = useState(false)
 
-  // タイプ判定
-  const getUserType = () => {
-    if (style >= 4 && logic >= 4 && pace >= 4 && distance >= 3) {
-      return "ストイック型"
-    }
-
-    if (style <= 2 && talk >= 4 && pace <= 3 && distance <= 2) {
-      return "エンジョイ型"
-    }
-
-    if (style <= 2 && distance <= 2 && talk >= 3) {
-      return "サポート重視型"
-    }
-
-    if (talk <= 2 && pace <= 2) {
-      return "マイペース型"
-    }
-
-    return "バランス型"
-  }
+  const [resultType, setResultType] = useState<string | null>(null)
 
   const handleSubmit = async () => {
     setLoading(true)
@@ -54,9 +35,8 @@ export default function DiagnosisPage() {
         router.push("/login")
         return
       }
-
-      const type = getUserType()
-
+      
+      // サーバーへ数値を送信
       const res = await fetch(`${API_URL}/api/diagnosis`, {
         method: "POST",
         headers: {
@@ -64,7 +44,11 @@ export default function DiagnosisPage() {
           "Authorization": `Bearer ${token}`,
         },
         body: JSON.stringify({
-          user_type: type
+          style,
+          talk,
+          logic,
+          pace,
+          distance
         })
       })
 
@@ -73,7 +57,14 @@ export default function DiagnosisPage() {
         return
       }
 
-      router.push(`/diagnosis/result?type=${type}`)
+      // サーバー側で判定されたタイプを受け取る
+      const json = await res.json()
+      const type = json.user_type || json.data?.user_type
+      
+    if (type) {
+      // クエリパラメータとしてタイプを渡して遷移
+      router.push(`/diagnosis/result?type=${encodeURIComponent(type)}`)
+    }
 
     } catch (err) {
       console.error(err)

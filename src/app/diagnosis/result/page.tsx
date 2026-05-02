@@ -1,6 +1,7 @@
 "use client"
 
-import { useRouter } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
+import { Suspense } from "react"
 import {
   Box,
   Typography,
@@ -9,58 +10,33 @@ import {
   Button,
   Stack
 } from "@mui/material"
-import { useEffect, useState } from "react"
 import { diagnosisMap } from "@/lib/diagnosis"
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL
 
-export default function DiagnosisResultPage() {
+function ResultContent() {
   const router = useRouter()
+  const searchParams = useSearchParams()
 
-  const [type, setType] = useState<string | null>(null)
-  const [loading, setLoading] = useState(true)
+  const type = searchParams.get("type")
 
-  useEffect(() => {
-    const fetchUserType = async () => {
-      try {
-        const token = localStorage.getItem("token")
-
-        if (!token) {
-          router.push("/login")
-          return
-        }
-
-        const res = await fetch(`${API_URL}/api/user`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        })
-
-        if (!res.ok) throw new Error("取得失敗")
-
-        const data = await res.json()
-        setType(data.user_type || null)
-
-      } catch (err) {
-        console.error(err)
-        setType(null)
-      } finally {
-        setLoading(false)
-      }
-    }
-
-    fetchUserType()
-  }, [])
-
-  const data = diagnosisMap[type ?? ""] || diagnosisMap["バランス型"]
-
-  if (loading) {
-    return <Typography p={4}>Loading...</Typography>
+  if (!type || !diagnosisMap[type]) {
+    return (
+      <Box sx={{ p: 4, textAlign: "center" }}>
+        <Typography variant="h6" color="error" mb={2}>
+          診断結果が見つかりませんでした
+        </Typography>
+        <Typography variant="body2" color="text.secondary" mb={4}>
+          もう一度最初から診断を行ってください。
+        </Typography>
+        <Button variant="contained" onClick={() => router.push("/diagnosis")}>
+          診断ページへ戻る
+        </Button>
+      </Box>
+    )
   }
 
-  if (!type) {
-    return <Typography p={4}>タイプが取得できませんでした</Typography>
-  }
+  const data = diagnosisMap[type]
 
   return (
     <Box sx={{ p: 4, maxWidth: 500, mx: "auto" }}>
@@ -107,5 +83,12 @@ export default function DiagnosisResultPage() {
         </Button>
       </Stack>
     </Box>
+  )
+}
+export default function DiagnosisResultPage() {
+  return (
+    <Suspense fallback={<Typography p={4}>Loading...</Typography>}>
+      <ResultContent />
+    </Suspense>
   )
 }
