@@ -14,7 +14,7 @@ import { diagnosisMap } from "@/lib/diagnosis"
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL
 
-export default function DiagnosisResultPage() {
+function ResultContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
 
@@ -83,5 +83,12 @@ export default function DiagnosisResultPage() {
         </Button>
       </Stack>
     </Box>
+  )
+}
+export default function DiagnosisResultPage() {
+  return (
+    <Suspense fallback={<Typography p={4}>Loading...</Typography>}>
+      <ResultContent />
+    </Suspense>
   )
 }
