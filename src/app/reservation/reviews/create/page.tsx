@@ -8,6 +8,7 @@ import {
   Typography,
   Button,
   Stack,
+  TextField,
 } from "@mui/material"
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL
@@ -21,6 +22,8 @@ export default function ReviewCreatePage() {
   const [logic, setLogic] = useState(3)
   const [pace, setPace] = useState(3)
   const [distance, setDistance] = useState(3)
+
+  const [comment, setComment] = useState("")
 
   const [reservationId, setReservationId] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
@@ -66,7 +69,8 @@ export default function ReviewCreatePage() {
           talk,
           logic,
           pace,
-          distance
+          distance,
+          comment
         })
       })
 
@@ -106,6 +110,17 @@ export default function ReviewCreatePage() {
         <ReviewSlider label="指導方法" left="体感型" right="論理型" value={logic} onChange={setLogic} marks={marks} />
         <ReviewSlider label="ペース" left="ゆっくり" right="テンポ良い" value={pace} onChange={setPace} marks={marks} />
         <ReviewSlider label="距離感" left="フレンドリー" right="プロっぽい" value={distance} onChange={setDistance} marks={marks} />
+
+        <TextField
+          label="コメント（任意）"
+          multiline
+          rows={4}
+          variant="outlined"
+          fullWidth
+          value={comment}
+          onChange={(e) => setComment(e.target.value)}
+          placeholder="トレーナーさんの印象や感想を教えてください"
+        />
 
         <Button
           variant="contained"
