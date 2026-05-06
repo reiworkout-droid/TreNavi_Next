@@ -85,3 +85,18 @@ export type TrainerSearch = Trainer & {
 export type TrainerDetail = Trainer & {
   plans: Plan[]
 }
+
+export type Review = {
+  id: number;
+  user_name: string;
+  user_type: string;
+  comment: string | null;
+  scores: {
+    style: number;
+    talk: number;
+    logic: number;
+    pace: number;
+    distance: number;
+  };
+  created_at: string;
+}
