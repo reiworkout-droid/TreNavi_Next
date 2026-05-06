@@ -11,8 +11,11 @@ import {
   Chip,
   Button,
   CircularProgress,
-  Divider
+  Divider,
+  MenuItem,
+  TextField
 } from "@mui/material"
+import { Review } from "@/types/trainer"
 import ArrowBackIcon from '@mui/icons-material/ArrowBack'
 
 // 数値をラベルに変換するヘルパー（ここはlibなどに切り出してもOK）
@@ -31,29 +34,35 @@ const getLabel = (key: string, value: number) => {
   return "標準的";
 };
 
+// 診断タイプのリスト（TreNaviの仕様に合わせて調整してください）
+const DIAGNOSIS_TYPES = ["すべて", "エンジョイ型", "サポート重視型", "マイペース型", "バランス型", "ストイック型"];
+
 const API_URL = process.env.NEXT_PUBLIC_API_URL
 
 export default function TrainerReviewsPage() {
   const params = useParams()
   const router = useRouter()
-  const [reviews, setReviews] = useState<any[]>([])
+  const [reviews, setReviews] = useState<Review[]>([])
   const [loading, setLoading] = useState(true)
+  const [selectedType, setSelectedType] = useState("すべて")
 
   useEffect(() => {
     const fetchReviews = async () => {
-      try {
-        const res = await fetch(`${API_URL}/api/trainers/${params.id}/reviews`)
-        if (!res.ok) throw new Error("取得失敗")
-        const data = await res.json()
-        setReviews(data)
-      } catch (err) {
-        console.error(err)
-      } finally {
-        setLoading(false)
-      }
+      setLoading(true)
+        try {
+          const url = `${API_URL}/api/trainers/${params.id}/reviews?type=${encodeURIComponent(selectedType)}`
+          const res = await fetch(url)
+          if (!res.ok) throw new Error("取得失敗")
+          const data = await res.json()
+          setReviews(data)
+        } catch (err) {
+          console.error(err)
+        } finally {
+          setLoading(false)
+        }
     }
     fetchReviews()
-  }, [params.id])
+  }, [params.id, selectedType])
 
   if (loading) return <Box sx={{ p: 4, textAlign: "center" }}><CircularProgress /></Box>
 
@@ -67,12 +76,32 @@ export default function TrainerReviewsPage() {
         トレーナー詳細へ戻る
       </Button>
 
-      <Typography variant="h5" fontWeight="bold" mb={3}>
-        口コミ一覧
-      </Typography>
+      <Stack direction="row" justifyContent="space-between" alignItems="center" mb={3}>
+        <Typography variant="h5" fontWeight="bold">
+          口コミ一覧
+        </Typography>
 
-      {reviews.length === 0 ? (
-        <Typography color="text.secondary">まだ口コミがありません。</Typography>
+        {/* 👈 絞り込みセレクトボックスを追加 */}
+        <TextField
+          select
+          size="small"
+          label="タイプで絞り込み"
+          value={selectedType}
+          onChange={(e) => setSelectedType(e.target.value)}
+          sx={{ width: 160 }}
+        >
+          {DIAGNOSIS_TYPES.map((type) => (
+            <MenuItem key={type} value={type}>
+              {type}
+            </MenuItem>
+          ))}
+        </TextField>
+      </Stack>
+
+      {loading ? (
+        <Box sx={{ textAlign: "center", py: 4 }}><CircularProgress /></Box>
+      ) : reviews.length === 0 ? (
+        <Typography color="text.secondary">条件に一致する口コミがありません。</Typography>
       ) : (
         <Stack spacing={3}>
           {reviews.map((review) => (
@@ -84,7 +113,6 @@ export default function TrainerReviewsPage() {
                     <Typography variant="subtitle1" fontWeight="bold">
                       {review.user_name} さん
                     </Typography>
-                    {/* 投稿者のタイプを表示 */}
                     <Chip 
                       label={review.user_type || "タイプ未診断"} 
                       size="small"
@@ -108,7 +136,7 @@ export default function TrainerReviewsPage() {
                   <Chip label={`距離感: ${getLabel("distance", review.scores.distance)}`} size="small" variant="outlined" />
                 </Box>
 
-                {/* もしコメント用のカラム(commentなど)を作っている場合はここに追加 */}
+                {/* コメント表示（背景色はTreNaviカラーに合わせても良いかも！） */}
                 {review.comment && (
                   <Typography variant="body2" sx={{ mt: 2, p: 1.5, bgcolor: "grey.50", borderRadius: 1 }}>
                     {review.comment}
