@@ -22,6 +22,7 @@ export default function TrainerReservationsPage() {
       setReservations(data)
     } catch (err) {
       console.error(err)
+      
       alert("予約一覧の取得に失敗しました")
     } finally {
       setLoading(false)
@@ -97,29 +98,48 @@ export default function TrainerReservationsPage() {
                   : " 却下"}
               </Typography>
 
-              {reservation.status === "pending" && (
-                <Stack direction="row" spacing={1} mt={1}>
-                  <Button
-                    variant="contained"
-                    color="success"
-                    onClick={() =>
-                      updateStatus(reservation.id, "confirmed")
-                    }
-                  >
-                    承認
-                  </Button>
-
+              {/* アクションボタン群 */}
+              <Stack direction="row" spacing={1} mt={2}>
+                {/* 診断結果を見るボタンを追加 */}
+                {reservation.user?.id && (
                   <Button
                     variant="outlined"
-                    color="error"
+                    size="small"
+                    color="primary"
                     onClick={() =>
-                      updateStatus(reservation.id, "canceled")
+                      router.push(`/trainer/users/${reservation.user.id}/diagnosis`)
                     }
                   >
-                    却下
+                    診断結果を見る
                   </Button>
-                </Stack>
-              )}
+                )}
+
+                {reservation.status === "pending" && (
+                  <>
+                    <Button
+                      variant="contained"
+                      color="success"
+                      size="small"
+                      onClick={() =>
+                        updateStatus(reservation.id, "confirmed")
+                      }
+                    >
+                      承認
+                    </Button>
+
+                    <Button
+                      variant="outlined"
+                      color="error"
+                      size="small"
+                      onClick={() =>
+                        updateStatus(reservation.id, "canceled")
+                      }
+                    >
+                      却下
+                    </Button>
+                  </>
+                )}
+              </Stack>
 
             </CardContent>
           </Card>
