@@ -7,6 +7,7 @@ import { diagnosisMap } from "@/lib/diagnosis"
 import DiagnosisResultView from "@/components/diagnosis/DiagnosisResultView"
 
 function ResultContent() {
+  // 画面遷移用
   const router = useRouter()
   const searchParams = useSearchParams()
 
