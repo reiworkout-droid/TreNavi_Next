@@ -19,7 +19,7 @@ export default function TrainerUserDiagnosisPage() {
         const token = localStorage.getItem("token") // トレーナーのトークン
         
         // トレーナー用の「特定ユーザーの情報を取得するAPI」を叩く
-        const res = await fetch(`${API_URL}/api/trainer/users/${userId}`, {
+        const res = await fetch(`${API_URL}/api/trainer/client/${userId}/diagnosis`, {
           headers: { Authorization: `Bearer ${token}` },
         })
         if (!res.ok) throw new Error("取得失敗")
