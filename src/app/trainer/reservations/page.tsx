@@ -107,7 +107,7 @@ export default function TrainerReservationsPage() {
                     size="small"
                     color="primary"
                     onClick={() =>
-                      router.push(`/trainer/users/${reservation.user.id}/diagnosis`)
+                      router.push(`/trainer/client/${reservation.user.id}/diagnosis`)
                     }
                   >
                     診断結果を見る
