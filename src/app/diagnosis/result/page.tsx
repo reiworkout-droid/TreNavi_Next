@@ -14,7 +14,7 @@ function ResultContent() {
   // URLパラメータ（?type=xxx）から診断タイプを取得
   const type = searchParams.get("type")
 
-  // データが存在しない、またはマッピングにない場合の例外処理
+
   if (!type || !diagnosisMap[type]) {
     return (
       <Box sx={{ p: 4, textAlign: "center" }}>
