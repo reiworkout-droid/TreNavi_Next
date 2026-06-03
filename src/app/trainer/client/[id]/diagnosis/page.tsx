@@ -46,7 +46,7 @@ export default function TrainerUserDiagnosisPage() {
       <Button 
         fullWidth 
         variant="outlined" 
-        onClick={() => router.push("/trainer/users")}
+        onClick={() => router.push("/trainer/reservations")}
       >
         クライアント一覧に戻る
       </Button>
