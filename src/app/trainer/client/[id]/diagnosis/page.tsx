@@ -42,7 +42,7 @@ export default function TrainerUserDiagnosisPage() {
 
   return (
     <DiagnosisResultView type={type}>
-      {/* トレーナー側専用のボタン（例：クライアント一覧に戻るなど） */}
+      {/* トレーナー側専用のボタン（例：クライアント一覧に戻る） */}
       <Button 
         fullWidth 
         variant="outlined" 
@@ -51,5 +51,6 @@ export default function TrainerUserDiagnosisPage() {
         クライアント一覧に戻る
       </Button>
     </DiagnosisResultView>
+    
   )
 }
